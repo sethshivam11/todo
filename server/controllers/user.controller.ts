@@ -3,7 +3,6 @@ import { Request, Response } from "express"
 import ApiError from "../utils/ApiError"
 import ApiResponse from "../utils/ApiResponse"
 import { User } from "../models/user.model"
-import { UserRequest } from "../middlewares/auth.middleware"
 
 const registerUser = asyncHandler(
     async (req: Request, res: Response) => {
@@ -16,12 +15,14 @@ const registerUser = asyncHandler(
         const userExists = await User.findOne({ email })
 
         if (userExists) {
-            throw new ApiError(400, "User already exists")
+            throw new ApiError(409, "User already exists")
         }
 
         const user = await User.create({
             fullName, email, password, avatar
         })
+
+        user.password = ""
 
         return res
             .status(201)
@@ -45,12 +46,13 @@ const loginUser = asyncHandler(
             throw new ApiError(404, "User not found")
         }
 
-        const isPasswordValid = user.isPasswordCorrect(password)
+        const isPasswordValid = await user.isPasswordCorrect(password)
 
         if (!isPasswordValid) {
             throw new ApiError(401, "Unauthorized request")
         }
 
+        user.password = ""
         const accessToken = await user.generateAccessToken()
 
         if (!accessToken) {
@@ -58,7 +60,7 @@ const loginUser = asyncHandler(
         }
 
         res
-            .status(201)
+            .status(200)
             .json(
                 new ApiResponse(200,
                     { user, accessToken },
@@ -69,15 +71,19 @@ const loginUser = asyncHandler(
 )
 
 const updateAvatar = asyncHandler(
-    async (req: UserRequest, res: Response) => {
+    async (req: Request, res: Response) => {
+
         const { avatar } = req.body
 
         if (!avatar) {
             throw new ApiError(404, "Avatar file is required")
         }
 
-        const { _id } = req.user
+        if (req.user == undefined) {
+            throw new ApiError(400, "Token error")
+        }
 
+        const { _id } = req.user
 
         const user = await User.findById(_id)
 
@@ -86,9 +92,10 @@ const updateAvatar = asyncHandler(
         }
 
         user.save({ validateBeforeSave: false })
+        user.password = ""
 
         return res
-            .status(202)
+            .status(200)
             .json(
                 new ApiResponse(200,
                     user,
@@ -99,11 +106,15 @@ const updateAvatar = asyncHandler(
 )
 
 const updateDetails = asyncHandler(
-    async (req: UserRequest, res: Response) => {
-        const { email, fullName } = req.body
+    async (req: Request, res: Response) => {
+        const { email, fullName, password } = req.body
 
-        if (!(email || fullName)) {
+        if (!(email || fullName) || !password) {
             throw new ApiError(400, "Email or fullName is required")
+        }
+
+        if (req.user == undefined) {
+            throw new ApiError(400, "Token not found")
         }
 
         const { _id } = req.user
@@ -111,13 +122,27 @@ const updateDetails = asyncHandler(
         const user = await User.findById(_id)
 
         if (!user) {
+            throw new ApiError(400, "User not found")
+        }
+
+        const isPasswordValid = await user.isPasswordCorrect(password)
+
+        if (!isPasswordValid) {
+            throw new ApiError(401, "Invalid password")
+        }
+
+        if (!user) {
             throw new ApiError(404, "User not found")
         }
 
+        if (email) user.email = email
+        if (fullName) user.fullName = fullName
+
         await user.save({ validateBeforeSave: false })
+        user.password = ""
 
         return res
-            .status(203)
+            .status(200)
             .json(
                 new ApiResponse(200,
                     user,
@@ -128,7 +153,7 @@ const updateDetails = asyncHandler(
 )
 
 const updatePassword = asyncHandler(
-    async (req: UserRequest, res: Response) => {
+    async (req: Request, res: Response) => {
         const { oldPassword, newPassword } = req.body
 
         if (!oldPassword || !newPassword) {
@@ -136,6 +161,10 @@ const updatePassword = asyncHandler(
                 400,
                 "Both passwords are required"
             )
+        }
+
+        if (req.user == undefined) {
+            throw new ApiError(400, "Token not found")
         }
 
         const { _id } = req.user
@@ -146,16 +175,18 @@ const updatePassword = asyncHandler(
             throw new ApiError(404, "User not found")
         }
 
-        const isPasswordValid = user.isPasswordCorrect(oldPassword)
+        const isPasswordValid = await user.isPasswordCorrect(oldPassword)
 
         if (!isPasswordValid) {
             throw new ApiError(401, "Invalid Password")
         }
 
+        user.password = newPassword
         await user.save()
+        user.password = ""
 
         return res
-            .status(204)
+            .status(200)
             .json(
                 new ApiResponse(200, user, "Password updated successfully")
             )
@@ -163,9 +194,13 @@ const updatePassword = asyncHandler(
 )
 
 const getCurrentUser = asyncHandler(
-    async (req: UserRequest, res: Response) => {
+    async (req: Request, res: Response) => {
+        if (req.user == undefined) {
+            throw new ApiError(400, "Token not found")
+        }
+
         return res
-            .status(205)
+            .status(200)
             .json(
                 new ApiResponse(200, req.user, "User found")
             )

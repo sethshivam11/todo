@@ -28,3 +28,4 @@ client/*.sw?
 node_modules
 .env
 nodemon.json
+dist

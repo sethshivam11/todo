@@ -9,11 +9,13 @@ app.use(express.urlencoded({ extended: true, limit: "50kb" }))
 
 // Route imports
 import userRouter from "./routes/user.route"
-
+import todoRouter from "./routes/todo.route"
+import noRoutes from "./routes/no.route"
 
 // Route declarations
+app.use("/api/v1", noRoutes)
 app.use("/api/v1/users", userRouter)
-
+app.use("/api/v1/todo", todoRouter)
 
 
 // Deployment

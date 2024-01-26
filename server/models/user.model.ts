@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from "mongoose"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 
-interface UserInterface extends Document {
+export interface UserInterface extends Document {
     fullName: String,
     email: String,
     password: String,
@@ -46,7 +46,7 @@ userSchema.methods.isPasswordCorrect = async function (password: string) {
     return await bcrypt.compare(password, this.password)
 }
 
-userSchema.methods.generateAcessToken = async function () {
+userSchema.methods.generateAccessToken = async function () {
     return await jwt.sign({
         _id: this._id,
         fullName: this.fullName,
