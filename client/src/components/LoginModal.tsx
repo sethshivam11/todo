@@ -16,10 +16,10 @@ import {
   ChangeEvent,
   FormEvent,
 } from "react";
+import toast from "react-hot-toast";
 
 interface Props {
   loginModal: boolean;
-  dark: boolean;
   isLoggedIn: boolean;
   setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
   setLoginModal: Dispatch<SetStateAction<boolean>>;
@@ -29,7 +29,6 @@ const LoginModal = ({
   loginModal,
   setIsLoggedIn,
   setLoginModal,
-  dark,
   isLoggedIn,
 }: Props) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -54,36 +53,41 @@ const LoginModal = ({
     })
       .then((parsed) => parsed.json())
       .then((res) => {
-        console.log(res);
         if (res.success) {
           localStorage.setItem("todo-accessToken", res.data.accessToken);
+          setIsLoggedIn(true);
+          setLoginModal(false);
+          toast.success("Successfully logged in");
         }
+        toast.error("Something went wrong!");
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error("Something went wrong!");
       });
   };
 
   return (
     <Dialog open={loginModal && !isLoggedIn}>
-      <DialogContent
-        className={`${dark ? "dark text-white" : ""} sm:max-w-[425px] `}
-      >
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Login</DialogTitle>
           <DialogDescription>Login to continue</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="login-email">Email</Label>
           <Input
             name="email"
-            id="email"
+            id="login-email"
             type="text"
             className="my-1"
             value={creds.email}
             onChange={handleChange}
           />
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="login-password">Password</Label>
           <Input
             name="password"
-            id="password"
+            id="login-password"
             type={showPassword ? "text" : "password"}
             className="my-1"
             value={creds.password}

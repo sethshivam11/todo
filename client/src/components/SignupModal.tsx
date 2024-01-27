@@ -16,10 +16,10 @@ import {
   ChangeEvent,
   FormEvent,
 } from "react";
+import toast from "react-hot-toast";
 
 interface Props {
   loginModal: boolean;
-  dark: boolean;
   isLoggedIn: boolean;
   setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
   setLoginModal: Dispatch<SetStateAction<boolean>>;
@@ -29,7 +29,6 @@ const SignupModal = ({
   loginModal,
   setIsLoggedIn,
   setLoginModal,
-  dark,
   isLoggedIn,
 }: Props) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -55,18 +54,23 @@ const SignupModal = ({
     })
       .then((parsed) => parsed.json())
       .then((res) => {
-        console.log(res);
         if (res.success) {
           localStorage.setItem("todo-accessToken", res.data.accessToken);
+          setIsLoggedIn(true);
+          setLoginModal(false);
+          toast.success("Successfully logged in")
         }
+        toast.error("Something went wrong!")
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error("Something went wrong!");
       });
   };
 
   return (
     <Dialog open={!loginModal && !isLoggedIn}>
-      <DialogContent
-        className={`${dark ? "dark text-white" : ""} sm:max-w-[425px] `}
-      >
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Register</DialogTitle>
           <DialogDescription>Create an account to continue</DialogDescription>
