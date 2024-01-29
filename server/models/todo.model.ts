@@ -23,11 +23,6 @@ const todoSchema = new Schema({
         trim: true,
         required: true,
     },
-    tag: {
-        type: String,
-        trim: true,
-        default: "General"
-    },
     completed: {
         type: Boolean,
         default: false

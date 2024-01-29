@@ -1,13 +1,16 @@
 import TodoMap from "./TodoMap";
 import { TodoInterface } from "./Todo";
+import { Button } from "./ui/button";
+import { Dispatch, SetStateAction } from "react";
 
 interface Props {
   todos: TodoInterface[];
-  loading: boolean
+  loading: boolean;
+  setCreateModal: Dispatch<SetStateAction<boolean>>;
+  fetchTodos: Function
 }
 
-const HomePage = ({todos, loading}:Props) => {
-  
+const HomePage = ({ todos, loading, setCreateModal, fetchTodos }: Props) => {
   return (
     <div className="w-full 2xl:p-16 xl:p-16 lg:p-16 md:p-10 p-6">
       <h1 className="text-4xl 2xl:text-5xl xl:text-5xl lg:text-5xl md:text-5xl">
@@ -18,13 +21,24 @@ const HomePage = ({todos, loading}:Props) => {
           <h2 className="2xl:text-2xl xl:text-2xl lg:text-2xl md:text-2xl text-xl">
             Assigned
           </h2>
-          <TodoMap todos={todos.filter(todo => !todo.completed)} loading={loading} />
+          <TodoMap
+            todos={todos.filter((todo) => !todo.completed)}
+            loading={loading}
+            fetchTodos={fetchTodos}
+          />
+          <Button onClick={() => setCreateModal(true)} className="ml-2">
+            Create Task
+          </Button>
         </li>
         <li className="2xl:w-1/2 2xl:h-full xl:w-1/2 xl:h-full lg:w-1/2 lg:h-full md:w-1/2 md:h-full w-full h-1/2">
           <h2 className="2xl:text-2xl xl:text-2xl lg:text-2xl md:text-2xl text-xl">
             Completed
           </h2>
-          <TodoMap todos={todos.filter(todo => todo.completed)} loading={loading}/>
+          <TodoMap
+            todos={todos.filter((todo) => todo.completed)}
+            loading={loading}
+            fetchTodos={fetchTodos}
+          />
         </li>
       </ul>
     </div>

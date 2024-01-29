@@ -10,12 +10,14 @@ import { TodoInterface } from "./components/Todo";
 import { Routes, Route } from "react-router-dom";
 import ProfilePage from "./components/ProfilePage";
 import AvatarButton from "./components/AvatarButton";
+import CreateTodo from "./components/CreateTodo";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [loginModal, setLoginModal] = useState(false);
+  const [createModal, setCreateModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useState<TodoInterface[]>([]);
 
   const fetchTodos = useCallback(() => {
     setLoading(true);
@@ -29,7 +31,7 @@ function App() {
       .then((parsed) => parsed.json())
       .then((res) => {
         if (res.success) {
-          setTodos(res.data.todos);
+          setTodos(res.data);
         }
         setLoading(false);
       })
@@ -42,69 +44,15 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem("todo-accessToken");
-    if (token) setIsLoggedIn(true);
-    if (isLoggedIn) fetchTodos();
-    else setLoginModal(true);
+    if (!token) {
+      setIsLoggedIn(false);
+      return setLoginModal(true);
+    }
+    fetchTodos();
+    setIsLoggedIn(true);
   }, []);
 
-  // const todos: TodoInterface[] = [
-  //   {
-  //     _id: "8948fjsld",
-  //     user: "lkjflkas8953579",
-  //     content: "have you done it",
-  //     completed: true,
-  //     title: "Coding",
-  //     tag: "General",
-  //   },
-  //   {
-  //     _id: "8948fjsld",
-  //     user: "lkjflkas8953579",
-  //     content: "have you done it",
-  //     completed: true,
-  //     title: "Coding",
-  //     tag: "General",
-  //   },
-  //   {
-  //     _id: "8948fjsld",
-  //     user: "lkjflkas8953579",
-  //     content: "have you done it",
-  //     completed: false,
-  //     title: "Coding",
-  //     tag: "General",
-  //   },
-  //   {
-  //     _id: "8948fjsld",
-  //     user: "lkjflkas8953579",
-  //     content: "have you done it",
-  //     completed: true,
-  //     title: "Coding",
-  //     tag: "General",
-  //   },
-  //   {
-  //     _id: "8948fjsld",
-  //     user: "lkjflkas8953579",
-  //     content: "have you done it",
-  //     completed: false,
-  //     title: "Coding",
-  //     tag: "General",
-  //   },
-  //   {
-  //     _id: "8948fjsld",
-  //     user: "lkjflkas8953579",
-  //     content: "have you done it",
-  //     completed: false,
-  //     title: "Coding",
-  //     tag: "General",
-  //   },
-  //   {
-  //     _id: "8948fjsld",
-  //     user: "lkjflkas8953579",
-  //     content: "have you done it",
-  //     completed: false,
-  //     title: "Coding",
-  //     tag: "General",
-  //   },
-  // ];
+  
 
   return (
     <ThemeProvider storageKey="todo-app-theme">
@@ -113,21 +61,36 @@ function App() {
           element={
             <>
               <ModeToggle />
-              <AvatarButton />
+              <AvatarButton
+                setLoginModal={setLoginModal}
+                setIsLoggedIn={setIsLoggedIn}
+              />
+              <CreateTodo
+                fetchTodos={fetchTodos}
+                createModal={createModal}
+                setCreateModal={setCreateModal}
+              />
               <Toaster gutter={8} position="bottom-center" />
               <LoginModal
+                fetchTodos={fetchTodos}
                 loginModal={loginModal}
                 setLoginModal={setLoginModal}
                 setIsLoggedIn={setIsLoggedIn}
                 isLoggedIn={isLoggedIn}
               />
               <SignupModal
+                fetchTodos={fetchTodos}
                 loginModal={loginModal}
                 setLoginModal={setLoginModal}
                 setIsLoggedIn={setIsLoggedIn}
                 isLoggedIn={isLoggedIn}
               />
-              <HomePage todos={todos} loading={loading} />
+              <HomePage
+                todos={todos}
+                loading={loading}
+                setCreateModal={setCreateModal}
+                fetchTodos={fetchTodos}
+              />
             </>
           }
           path="/"

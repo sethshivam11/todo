@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Checkbox } from "@radix-ui/react-checkbox";
+import { CheckboxDemo } from "./CheckboxDemo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
 import {
@@ -23,6 +23,7 @@ interface Props {
   isLoggedIn: boolean;
   setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
   setLoginModal: Dispatch<SetStateAction<boolean>>;
+  fetchTodos: Function;
 }
 
 const SignupModal = ({
@@ -30,6 +31,7 @@ const SignupModal = ({
   setIsLoggedIn,
   setLoginModal,
   isLoggedIn,
+  fetchTodos,
 }: Props) => {
   const [showPassword, setShowPassword] = useState(false);
   const [creds, setCreds] = useState({
@@ -58,9 +60,10 @@ const SignupModal = ({
           localStorage.setItem("todo-accessToken", res.data.accessToken);
           setIsLoggedIn(true);
           setLoginModal(false);
-          toast.success("Successfully logged in")
+          fetchTodos();
+          return toast.success("Successfully logged in");
         }
-        toast.error("Something went wrong!")
+        toast.error("Something went wrong!");
       })
       .catch((err) => {
         console.log(err);
@@ -104,8 +107,11 @@ const SignupModal = ({
             onChange={handleChange}
           />
           <div className="my-2">
-            <Checkbox id="show" asChild />
-            <Label htmlFor="show">Show Password</Label>
+            <CheckboxDemo
+              setShowPassword={setShowPassword}
+              label="Show Password"
+              showPassword={showPassword}
+            />
           </div>
           <Button type="submit" className="mt-4">
             Register

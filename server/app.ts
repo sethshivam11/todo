@@ -1,11 +1,19 @@
 import express, { Request, Response } from "express"
 import path from "path"
+import { UserInterface } from "./models/user.model"
 
+// Interface for req.user 
+declare module "express" {
+    interface Request {
+        user?: UserInterface
+    }
+}
 
 const app = express()
 
 app.use(express.json({ limit: "50kb" }))
 app.use(express.urlencoded({ extended: true, limit: "50kb" }))
+
 
 // Route imports
 import userRouter from "./routes/user.route"

@@ -111,7 +111,7 @@ const deleteTodo = asyncHandler(
         const todo = await Todo.findById(todo_id)
 
         if (!todo) throw new ApiError(404, "Todo not found`")
-        if (todo.user !== _id) throw new ApiError(400, "Unathorized request")
+        if (todo.user.toString() !== _id.toString()) throw new ApiError(400, "Unathorized request")
         
 
         await Todo.findByIdAndDelete(todo_id)

@@ -23,11 +23,16 @@ const registerUser = asyncHandler(
         })
 
         user.password = ""
+        const accessToken = await user.generateAccessToken()
+
+        if (!accessToken) {
+            throw new ApiError(500, "Something went wrong, while generating access token")
+        }
 
         return res
             .status(201)
             .json(
-                new ApiResponse(200, user, "User created successfully")
+                new ApiResponse(200, { user, accessToken }, "User created successfully")
             )
     }
 )
@@ -110,7 +115,7 @@ const updateDetails = asyncHandler(
         const { email, fullName, password } = req.body
 
         if (!(email || fullName) || !password) {
-            throw new ApiError(400, "Email or fullName is required")
+            throw new ApiError(400, "Email or fullName and password is required")
         }
 
         if (req.user == undefined) {

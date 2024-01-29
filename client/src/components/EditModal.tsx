@@ -20,8 +20,7 @@ const EditModal = ({ editModal, oldTodo, setEditModal }: Props) => {
   });
   const handleSubmit = (e: FormEvent, _id: string) => {
     e.preventDefault();
-
-    console.log(todo);
+    
   };
 
   const handleChange = (e: ChangeEvent) => {
@@ -41,7 +40,7 @@ const EditModal = ({ editModal, oldTodo, setEditModal }: Props) => {
             value={todo.title}
             onChange={handleChange}
           />
-          <Label htmlFor="todo-content">Content</Label>
+          <Label htmlFor="todo-content">Task</Label>
           <Input
             name="content"
             id="todo-content"
