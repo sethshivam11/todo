@@ -13,10 +13,10 @@ interface Props {
 const HomePage = ({ todos, loading, setCreateModal, fetchTodos }: Props) => {
   return (
     <div className="w-full 2xl:p-16 xl:p-16 lg:p-16 md:p-10 p-6">
-      <h1 className="text-4xl 2xl:text-5xl xl:text-5xl lg:text-5xl md:text-5xl">
+      <h1 className="text-4xl my-6 2xl:my-0 2xl:text-5xl xl:my-0 xl:text-5xl lg:text-5xl lg:my-0 md:text-5xl md:my-2">
         Todos
       </h1>
-      <ul className="flex 2xl:flex-row xl:flex-row lg:flex-row md:flex-row flex-col gap-4 pt-4">
+      <ul className="flex 2xl:flex-row xl:flex-row lg:flex-row md:flex-row flex-col gap-8 pt-4">
         <li className="2xl:w-1/2 2xl:h-full xl:w-1/2 xl:h-full lg:w-1/2 lg:h-full md:w-1/2 md:h-full w-full h-1/2">
           <h2 className="2xl:text-2xl xl:text-2xl lg:text-2xl md:text-2xl text-xl">
             Assigned
@@ -26,7 +26,7 @@ const HomePage = ({ todos, loading, setCreateModal, fetchTodos }: Props) => {
             loading={loading}
             fetchTodos={fetchTodos}
           />
-          <Button onClick={() => setCreateModal(true)} className="ml-2">
+          <Button onClick={() => setCreateModal(true)} className="ml-2 mt-4">
             Create Task
           </Button>
         </li>

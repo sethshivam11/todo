@@ -29,6 +29,7 @@ export default function CreateTodo({
   setCreateModal,
   fetchTodos,
 }: Props) {
+  const [loading, setLoading] = useState(false);
   const [todo, setTodo] = useState({
     title: "",
     content: "",
@@ -36,6 +37,7 @@ export default function CreateTodo({
   });
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    setLoading(true)
     const toastLoading = toast.loading("Please wait");
     fetch("/api/v1/todo/create", {
       method: "post",
@@ -47,7 +49,6 @@ export default function CreateTodo({
     })
       .then((parsed) => parsed.json())
       .then((res) => {
-        toast.dismiss(toastLoading);
         if (res.success) {
           fetchTodos();
           setCreateModal(false);
@@ -63,7 +64,10 @@ export default function CreateTodo({
         console.log(err);
         toast.error("Something went wrong!")
       })
-      .finally(() => toast.dismiss(toastLoading));
+      .finally(() => {
+        toast.dismiss(toastLoading)
+        setLoading(false)
+      });
   };
 
   const handleChange = (e: ChangeEvent) => {
@@ -99,7 +103,7 @@ export default function CreateTodo({
             onChange={handleChange}
           />
           <DialogFooter>
-            <Button type="submit" size="lg" className="mt-4">
+            <Button type="submit" size="lg" className="mt-4" disabled={loading}>
               Create
             </Button>
             <Button

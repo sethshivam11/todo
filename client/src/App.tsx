@@ -33,12 +33,13 @@ function App() {
         if (res.success) {
           setTodos(res.data);
         }
-        setLoading(false);
       })
       .catch((err) => {
         console.log(err);
-        setLoading(false);
         toast.error("Something went wrong!");
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
@@ -51,8 +52,6 @@ function App() {
     fetchTodos();
     setIsLoggedIn(true);
   }, []);
-
-  
 
   return (
     <ThemeProvider storageKey="todo-app-theme">
@@ -70,7 +69,7 @@ function App() {
                 createModal={createModal}
                 setCreateModal={setCreateModal}
               />
-              <Toaster gutter={8} position="bottom-center" />
+              <Toaster position="bottom-center" />
               <LoginModal
                 fetchTodos={fetchTodos}
                 loginModal={loginModal}

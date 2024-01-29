@@ -1,4 +1,4 @@
-import { SetStateAction, Dispatch } from "react";
+import { SetStateAction, Dispatch, useState } from "react";
 import { CheckSquare2, Trash, Edit, Square } from "lucide-react";
 import {
   Tooltip,
@@ -17,7 +17,9 @@ interface Props {
 }
 
 const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
-  const handleComplete = (completed: boolean) => {
+  const [loading, setLoading] = useState(false);
+  const handleComplete = (completed: string) => {
+    setLoading(true);
     const toastLoading = toast.loading("Please wait");
     fetch(`/api/v1/todo/update/${todo._id}`, {
       method: "put",
@@ -29,20 +31,23 @@ const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
     })
       .then((parsed) => parsed.json())
       .then((res) => {
-        toast.dismiss(toastLoading);
         if (res.success) {
           fetchTodos();
-          return toast.success("Task marked as completed");
+          toast.success("Task marked as completed");
         }
       })
       .catch((err) => {
         console.log(err);
         toast.error("Something went wrong!");
       })
-      .finally(() => toast.dismiss(toastLoading));
+      .finally(() => {
+        setLoading(false);
+        toast.dismiss(toastLoading);
+      });
   };
 
   const handleDelete = () => {
+    setLoading(true);
     const toastLoading = toast.loading("Please wait");
     fetch(`/api/v1/todo/delete/${todo._id}`, {
       method: "delete",
@@ -53,17 +58,19 @@ const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
     })
       .then((parsed) => parsed.json())
       .then((res) => {
-        toast.dismiss(toastLoading);
         if (res.success) {
           fetchTodos();
-          toast.success("Task marked as completed");
+          toast.success("Task deleted");
         }
       })
       .catch((err) => {
         console.log(err);
         toast.error("Something went wrong!");
       })
-      .finally(() => toast.dismiss(toastLoading));
+      .finally(() => {
+        setLoading(false);
+        toast.dismiss(toastLoading);
+      });
   };
 
   return (
@@ -73,7 +80,8 @@ const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
           <TooltipTrigger
             className={`hover:bg-gray-100 hover:dark:bg-slate-800 p-2 rounded-md
             ${todo.completed ? "hidden" : ""}`}
-            onClick={() => handleComplete(true)}
+            disabled={loading}
+            onClick={() => handleComplete("complete")}
           >
             <Square />
           </TooltipTrigger>
@@ -87,7 +95,8 @@ const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
           <TooltipTrigger
             className={`hover:bg-gray-100 hover:dark:bg-slate-800 p-2 rounded-md
             ${todo.completed ? "" : "hidden"}`}
-            onClick={() => handleComplete(false)}
+            disabled={loading}
+            onClick={() => handleComplete("incomplete")}
           >
             <CheckSquare2 />
           </TooltipTrigger>
@@ -100,6 +109,7 @@ const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
         <Tooltip>
           <TooltipTrigger
             className="hover:bg-gray-100 hover:dark:bg-slate-800 p-2 rounded-md"
+            disabled={loading}
             onClick={() => setEditModal(true)}
           >
             <Edit />
@@ -113,6 +123,7 @@ const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
         <Tooltip>
           <TooltipTrigger
             className="hover:bg-red-400 hover:dark:bg-red-800 p-2 rounded-md"
+            disabled={loading}
             onClick={handleDelete}
           >
             <Trash />

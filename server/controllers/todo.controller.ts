@@ -24,7 +24,7 @@ const getAllTodos = asyncHandler(
 
 const createTodo = asyncHandler(
     async (req: Request, res: Response) => {
-        const { title, tag, content } = req.body
+        const { title, content } = req.body
 
         if (req.user == undefined) {
             throw new ApiError(400, "Token not found")
@@ -38,7 +38,6 @@ const createTodo = asyncHandler(
 
         const todo = await Todo.create({
             title,
-            tag,
             content,
             user: _id
         })
@@ -62,12 +61,12 @@ const updateTodo = asyncHandler(
             throw new ApiError(400, "Token not found")
         }
 
-        const { content, title, completed, tag } = req.body
+        const { content, title, completed } = req.body
         const { todo_id } = req.params
         const { _id } = req.user
 
-        if (!(content || title || completed || tag) || !todo_id) {
-            throw new ApiError(400, "todo_id / content / title / completed / tag is required")
+        if (!(content || title || completed) || !todo_id) {
+            throw new ApiError(400, "todo_id / content / title / completed is required")
         }
 
         const todo = await Todo.findById(todo_id)
@@ -81,14 +80,17 @@ const updateTodo = asyncHandler(
         }
 
         if (content) todo.content = content
-        if (title) todo.title = content
-        if (completed) todo.completed = completed
-        if (tag) todo.tag = tag
+        if (title) todo.title = title
+        if (completed) {
+            if(completed === "complete") todo.completed = true
+            if(completed === "incomplete") todo.completed = false
+        }
+
 
         await todo.save()
 
         return res
-            .status(202)
+            .status(200)
             .json(
                 new ApiResponse(200, todo, "Todo updated successfully")
             )
@@ -112,12 +114,12 @@ const deleteTodo = asyncHandler(
 
         if (!todo) throw new ApiError(404, "Todo not found`")
         if (todo.user.toString() !== _id.toString()) throw new ApiError(400, "Unathorized request")
-        
+
 
         await Todo.findByIdAndDelete(todo_id)
 
         return res
-            .status(203)
+            .status(200)
             .json(
                 new ApiResponse(200, {}, "Todo deleted successfully")
             )

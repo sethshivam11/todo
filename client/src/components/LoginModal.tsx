@@ -23,7 +23,7 @@ interface Props {
   isLoggedIn: boolean;
   setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
   setLoginModal: Dispatch<SetStateAction<boolean>>;
-  fetchTodos: Function
+  fetchTodos: Function;
 }
 
 const LoginModal = ({
@@ -31,8 +31,9 @@ const LoginModal = ({
   setIsLoggedIn,
   setLoginModal,
   isLoggedIn,
-  fetchTodos
+  fetchTodos,
 }: Props) => {
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [creds, setCreds] = useState({
     email: "",
@@ -46,6 +47,8 @@ const LoginModal = ({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    const toastLoading = toast.loading("Please wait");
     fetch("/api/v1/users/login", {
       method: "post",
       headers: {
@@ -59,14 +62,17 @@ const LoginModal = ({
           localStorage.setItem("todo-accessToken", res.data.accessToken);
           setIsLoggedIn(true);
           setLoginModal(false);
-          fetchTodos()
-          return toast.success("Successfully logged in");
+          fetchTodos();
+          toast.success("Successfully logged in");
         }
-        toast.error("Something went wrong!");
       })
       .catch((err) => {
         console.log(err);
         toast.error("Something went wrong!");
+      })
+      .finally(() => {
+        toast.dismiss(toastLoading);
+        setLoading(false);
       });
   };
 
@@ -103,7 +109,7 @@ const LoginModal = ({
               showPassword={showPassword}
             />
           </div>
-          <Button type="submit" className="mt-4">
+          <Button type="submit" className="mt-4" disabled={loading}>
             Login
           </Button>
           <Button

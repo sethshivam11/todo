@@ -32,6 +32,7 @@ const Todo = ({ todo, fetchTodos }: Props) => {
       </div>
       {editModal ? (
         <EditModal
+        fetchTodos={fetchTodos}
           editModal={editModal}
           oldTodo={todo}
           setEditModal={setEditModal}

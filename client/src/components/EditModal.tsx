@@ -5,14 +5,17 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import { Button } from "./ui/button";
 import { TodoInterface } from "./Todo";
 import { Dispatch, SetStateAction } from "react";
+import toast from "react-hot-toast";
 
 interface Props {
   editModal: boolean;
   oldTodo: TodoInterface;
   setEditModal: Dispatch<SetStateAction<boolean>>;
+  fetchTodos: Function
 }
 
-const EditModal = ({ editModal, oldTodo, setEditModal }: Props) => {
+const EditModal = ({ editModal, oldTodo, setEditModal, fetchTodos }: Props) => {
+  const [loading, setLoading] = useState(false);
   const [todo, setTodo] = useState({
     content: oldTodo.content,
     title: oldTodo.title,
@@ -20,7 +23,29 @@ const EditModal = ({ editModal, oldTodo, setEditModal }: Props) => {
   });
   const handleSubmit = (e: FormEvent, _id: string) => {
     e.preventDefault();
-    
+    setLoading(true)
+    const toastLoading = toast.loading("Please wait");
+    fetch(`/api/v1/todo/update/${oldTodo._id}`, {
+      method: "put",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
+      },
+      body: JSON.stringify(todo),
+    })
+      .then((parsed) => parsed.json())
+      .then((res) => {
+        if (res.success) {
+          setEditModal(false)
+          fetchTodos()
+          toast.success("Successfully updated task")
+        }
+      })
+      .catch((err) => console.log(err))
+      .finally(() => {
+        toast.dismiss(toastLoading)
+        setLoading(false)
+      });
   };
 
   const handleChange = (e: ChangeEvent) => {
@@ -49,9 +74,11 @@ const EditModal = ({ editModal, oldTodo, setEditModal }: Props) => {
             value={todo.content}
             onChange={handleChange}
           />
-          <Button type="submit" className="mt-2" disabled={
-            todo.title.length < 4 || todo.content.length < 4
-          }>
+          <Button
+            type="submit"
+            className="mt-2"
+            disabled={todo.title.length < 4 || todo.content.length < 4 || loading}
+          >
             Update
           </Button>
           <Button

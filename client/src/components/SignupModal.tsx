@@ -33,6 +33,7 @@ const SignupModal = ({
   isLoggedIn,
   fetchTodos,
 }: Props) => {
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [creds, setCreds] = useState({
     fullName: "",
@@ -47,6 +48,8 @@ const SignupModal = ({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    setLoading(false)
+    const toastLoading = toast.loading("Please wait")
     fetch("/api/v1/users/register", {
       method: "post",
       headers: {
@@ -61,14 +64,16 @@ const SignupModal = ({
           setIsLoggedIn(true);
           setLoginModal(false);
           fetchTodos();
-          return toast.success("Successfully logged in");
+          toast.success("Successfully logged in");
         }
-        toast.error("Something went wrong!");
       })
       .catch((err) => {
         console.log(err);
         toast.error("Something went wrong!");
-      });
+      }).finally(() => {
+        toast.dismiss(toastLoading)
+        setLoading(false)
+      })
   };
 
   return (
@@ -113,7 +118,7 @@ const SignupModal = ({
               showPassword={showPassword}
             />
           </div>
-          <Button type="submit" className="mt-4">
+          <Button type="submit" className="mt-4" disabled={loading}>
             Register
           </Button>
           <Button
