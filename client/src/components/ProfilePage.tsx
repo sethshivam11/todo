@@ -11,7 +11,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { ChevronLeft } from "lucide-react";
 import { Label } from "@radix-ui/react-label";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import UpdateAvatar from "./UpdateAvatar";
 
 const ProfilePage = () => {
@@ -63,15 +63,20 @@ const ProfilePage = () => {
     })
       .then((parsed) => parsed.json())
       .then((res) => {
+        toast.dismiss(toastLoading);
         if (res.success) {
-          console.log(res.data);
+          toast.success("Details updated");
+          setEditDetails(false)
+        }
+        if (!res.success) {
+          toast.error(res.message);
         }
       })
       .catch((err) => {
         console.log(err);
         toast.error("Something went wrong!");
-      })
-      .finally(() => toast.dismiss(toastLoading));
+        toast.dismiss(toastLoading);
+      });
   };
   const handleChange = (e: ChangeEvent) => {
     const input = e.target as HTMLInputElement;
@@ -85,6 +90,7 @@ const ProfilePage = () => {
 
   return (
     <main className="w-full 2xl:p-16 xl:p-16 lg:p-16 md:p-10 p-6">
+      <Toaster position="bottom-center" />
       <Button
         onClick={() => (window.location.href = "/")}
         size="default"

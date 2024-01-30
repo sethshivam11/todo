@@ -175,7 +175,7 @@ const updateDetails = asyncHandler(
             res
                 .status(400)
                 .json(
-                    new ApiResponse(400, {}, "Email or fullName and password is required")
+                    new ApiResponse(400, {}, "All fields are required")
                 )
             throw new ApiError(400, "Email or fullName and password is required")
         }
