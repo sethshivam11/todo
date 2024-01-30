@@ -1,24 +1,24 @@
 "use client";
 interface Props {
   label: string;
-  showPassword: boolean;
   setShowPassword: Dispatch<SetStateAction<boolean>>;
+  uniqueId: string
 }
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dispatch, SetStateAction } from "react";
 
-export function CheckboxDemo({ label, showPassword, setShowPassword }: Props) {
+export function CheckboxDemo({ label, setShowPassword, uniqueId }: Props) {
   return (
     <div className="flex items-center space-x-2">
       <Checkbox
-        id="terms"
-        checked={showPassword}
-        onChange={() => setShowPassword(false)}
+        id={uniqueId}
+        defaultChecked={false}
+        onClick={() => setShowPassword((prev) => !prev)}
       />
       <label
-        htmlFor="terms"
-        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        htmlFor={uniqueId}
+        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 select-none"
       >
         {label}
       </label>

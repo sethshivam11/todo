@@ -26,7 +26,7 @@ const HomePage = ({ todos, loading, setCreateModal, fetchTodos }: Props) => {
             loading={loading}
             fetchTodos={fetchTodos}
           />
-          <Button onClick={() => setCreateModal(true)} className="ml-2 mt-4">
+          <Button onClick={() => setCreateModal(true)} className="ml-2 mt-4 selection:text-black dark:selection:text-white">
             Create Task
           </Button>
         </li>

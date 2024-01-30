@@ -1,12 +1,18 @@
 import { Button } from "./ui/button";
-import avatar from "../assets/avatar2.png";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@radix-ui/react-dropdown-menu";
-import { Dispatch, SetStateAction } from "react";
+import toast from "react-hot-toast";
+import {
+  Dispatch,
+  SetStateAction,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 
 interface Props {
   setLoginModal: Dispatch<SetStateAction<boolean>>;
@@ -14,6 +20,32 @@ interface Props {
 }
 
 const AvatarButton = ({ setLoginModal, setIsLoggedIn }: Props) => {
+  const [avatar, setAvatar] = useState("");
+  const fetchUser = useCallback(() => {
+    fetch("/api/v1/users/get", {
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
+      },
+    })
+      .then((parsed) => parsed.json())
+      .then((res) => {
+        if (res.success) {
+          setAvatar(res.data.avatar);
+          localStorage.setItem("todo-avatar", res.data.avatar);
+        }
+        if (!res.success) {
+          toast.error(res.message);
+        }
+      })
+      .catch((err) => console.log(err));
+  }, []);
+  useEffect(() => {
+    const savedAvatar = localStorage.getItem("todo-avatar");
+    if (savedAvatar) setAvatar(savedAvatar);
+    else fetchUser();
+  }, []);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="pointer-cursor z-10">
@@ -38,6 +70,7 @@ const AvatarButton = ({ setLoginModal, setIsLoggedIn }: Props) => {
           className="px-4 py-1 cursor-default text-center text-red-400  hover:dark:bg-slate-800 hover:bg-gray-100 rounded-md"
           onClick={() => {
             localStorage.removeItem("todo-accessToken");
+            localStorage.removeItem("todo-avatar");
             setLoginModal(true);
             setIsLoggedIn(false);
           }}

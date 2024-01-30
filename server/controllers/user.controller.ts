@@ -8,13 +8,30 @@ const registerUser = asyncHandler(
     async (req: Request, res: Response) => {
         const { fullName, email, password, avatar } = req.body
 
-        if ([email, password].some(field => field?.trim() === "")) {
-            throw new ApiError(400, "Email or password is required!")
+        if ([fullName, email, password].some(field => field?.trim() === "")) {
+            res
+                .status(400)
+                .json(
+                    new ApiResponse(400, {}, "All fields are required")
+                )
+            throw new ApiError(400, "All fields are required!")
         }
-
+        if (!(email.includes("@") || email.includes("."))) {
+            res
+                .status(401)
+                .json(
+                    new ApiResponse(400, {}, "Invalid email")
+                )
+            throw new ApiError(400, "Invalid email")
+        }
         const userExists = await User.findOne({ email })
 
         if (userExists) {
+            res
+                .status(409)
+                .json(
+                    new ApiResponse(400, {}, "User already exists")
+                )
             throw new ApiError(409, "User already exists")
         }
 
@@ -26,6 +43,11 @@ const registerUser = asyncHandler(
         const accessToken = await user.generateAccessToken()
 
         if (!accessToken) {
+            res
+                .status(500)
+                .json(
+                    new ApiResponse(500, {}, "Something went wrong, while generating access token")
+                )
             throw new ApiError(500, "Something went wrong, while generating access token")
         }
 
@@ -42,18 +64,33 @@ const loginUser = asyncHandler(
         const { email, password } = req.body
 
         if (!(email || password)) {
+            res
+                .status(404)
+                .json(
+                    new ApiResponse(400, {}, "Email or password is required")
+                )
             throw new ApiError(404, "Email or password is required")
         }
 
         const user = await User.findOne({ email })
 
         if (!user) {
+            res
+                .status(404)
+                .json(
+                    new ApiResponse(400, {}, "User not found")
+                )
             throw new ApiError(404, "User not found")
         }
 
         const isPasswordValid = await user.isPasswordCorrect(password)
 
         if (!isPasswordValid) {
+            res
+                .status(404)
+                .json(
+                    new ApiResponse(400, {}, "Invalid password")
+                )
             throw new ApiError(401, "Unauthorized request")
         }
 
@@ -61,6 +98,11 @@ const loginUser = asyncHandler(
         const accessToken = await user.generateAccessToken()
 
         if (!accessToken) {
+            res
+                .status(500)
+                .json(
+                    new ApiResponse(500, {}, "Something went wrong, while generating access token")
+                )
             throw new ApiError(500, "Something went wrong, while generating access token")
         }
 
@@ -81,10 +123,20 @@ const updateAvatar = asyncHandler(
         const { avatar } = req.body
 
         if (!avatar) {
+            res
+                .status(400)
+                .json(
+                    new ApiResponse(400, {}, "Avatar file is required")
+                )
             throw new ApiError(404, "Avatar file is required")
         }
 
         if (req.user == undefined) {
+            res
+                .status(401)
+                .json(
+                    new ApiResponse(400, {}, "Token error")
+                )
             throw new ApiError(400, "Token error")
         }
 
@@ -93,6 +145,11 @@ const updateAvatar = asyncHandler(
         const user = await User.findById(_id)
 
         if (!user) {
+            res
+                .status(404)
+                .json(
+                    new ApiResponse(400, {}, "")
+                )
             throw new ApiError(404, "User not found")
         }
 
@@ -115,10 +172,20 @@ const updateDetails = asyncHandler(
         const { email, fullName, password } = req.body
 
         if (!(email || fullName) || !password) {
+            res
+                .status(400)
+                .json(
+                    new ApiResponse(400, {}, "Email or fullName and password is required")
+                )
             throw new ApiError(400, "Email or fullName and password is required")
         }
 
         if (req.user == undefined) {
+            res
+                .status(401)
+                .json(
+                    new ApiResponse(400, {}, "Token not found")
+                )
             throw new ApiError(400, "Token not found")
         }
 
@@ -127,16 +194,31 @@ const updateDetails = asyncHandler(
         const user = await User.findById(_id)
 
         if (!user) {
+            res
+                .status(400)
+                .json(
+                    new ApiResponse(400, {}, "User not found")
+                )
             throw new ApiError(400, "User not found")
         }
 
         const isPasswordValid = await user.isPasswordCorrect(password)
 
         if (!isPasswordValid) {
+            res
+                .status(401)
+                .json(
+                    new ApiResponse(400, {}, "Invalid password")
+                )
             throw new ApiError(401, "Invalid password")
         }
 
         if (!user) {
+            res
+                .status(404)
+                .json(
+                    new ApiResponse(400, {}, "User not found")
+                )
             throw new ApiError(404, "User not found")
         }
 
@@ -162,6 +244,11 @@ const updatePassword = asyncHandler(
         const { oldPassword, newPassword } = req.body
 
         if (!oldPassword || !newPassword) {
+            res
+                .status(400)
+                .json(
+                    new ApiResponse(400, {}, "Both password are required")
+                )
             throw new ApiError(
                 400,
                 "Both passwords are required"
@@ -169,6 +256,11 @@ const updatePassword = asyncHandler(
         }
 
         if (req.user == undefined) {
+            res
+                .status(400)
+                .json(
+                    new ApiResponse(400, {}, "Token not found")
+                )
             throw new ApiError(400, "Token not found")
         }
 
@@ -177,13 +269,23 @@ const updatePassword = asyncHandler(
         const user = await User.findById(_id)
 
         if (!user) {
+            res
+                .status(404)
+                .json(
+                    new ApiResponse(400, {}, "User not found")
+                )
             throw new ApiError(404, "User not found")
         }
 
         const isPasswordValid = await user.isPasswordCorrect(oldPassword)
 
         if (!isPasswordValid) {
-            throw new ApiError(401, "Invalid Password")
+            res
+                .status(400)
+                .json(
+                    new ApiResponse(400, {}, "Invalid password")
+                )
+            throw new ApiError(401, "Invalid password")
         }
 
         user.password = newPassword
@@ -201,6 +303,11 @@ const updatePassword = asyncHandler(
 const getCurrentUser = asyncHandler(
     async (req: Request, res: Response) => {
         if (req.user == undefined) {
+            res
+                .status(400)
+                .json(
+                    new ApiResponse(400, {}, "Token not found")
+                )
             throw new ApiError(400, "Token not found")
         }
 

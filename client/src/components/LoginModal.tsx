@@ -5,6 +5,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
@@ -62,8 +63,15 @@ const LoginModal = ({
           localStorage.setItem("todo-accessToken", res.data.accessToken);
           setIsLoggedIn(true);
           setLoginModal(false);
+          setCreds({
+            email: "",
+            password: ""
+          })
           fetchTodos();
           toast.success("Successfully logged in");
+        }
+        if(!res.success){
+          toast.error(res.message)
         }
       })
       .catch((err) => {
@@ -78,7 +86,7 @@ const LoginModal = ({
 
   return (
     <Dialog open={loginModal && !isLoggedIn}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] dark:selection:bg-slate-800 selection:bg-gray-300">
         <DialogHeader>
           <DialogTitle>Login</DialogTitle>
           <DialogDescription>Login to continue</DialogDescription>
@@ -106,22 +114,35 @@ const LoginModal = ({
             <CheckboxDemo
               setShowPassword={setShowPassword}
               label="Show Password"
-              showPassword={showPassword}
+              uniqueId="login-check"
             />
           </div>
-          <Button type="submit" className="mt-4" disabled={loading}>
-            Login
-          </Button>
-          <Button
-            variant="outline"
-            className="ml-2"
-            onClick={() => {
-              setLoginModal(false);
-              setIsLoggedIn(false);
-            }}
-          >
-            Register
-          </Button>
+          <DialogFooter>
+            <Button
+              type="submit"
+              className="mt-2 selection:text-black dark:selection:text-white"
+              disabled={
+                loading || creds.password.length < 6 || creds.email.length < 4
+              }
+            >
+              Login
+            </Button>
+            <Button
+              variant="outline"
+              className="mt-2"
+              type="button"
+              onClick={() => {
+                setLoginModal(false);
+                setIsLoggedIn(false);
+                setCreds({
+                  email: "",
+                  password: "",
+                });
+              }}
+            >
+              Register
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

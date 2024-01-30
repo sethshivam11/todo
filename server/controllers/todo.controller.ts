@@ -7,6 +7,11 @@ import { Todo } from "../models/todo.model";
 const getAllTodos = asyncHandler(
     async (req: Request, res: Response) => {
         if (req.user == undefined) {
+            res
+                .status(401)
+                .json(
+                    new ApiResponse(400, {}, "Token not found")
+                )
             throw new ApiError(400, "Token not found")
         }
 
@@ -27,12 +32,22 @@ const createTodo = asyncHandler(
         const { title, content } = req.body
 
         if (req.user == undefined) {
+            res
+                .status(401)
+                .json(
+                    new ApiResponse(400, {}, "Token not found")
+                )
             throw new ApiError(400, "Token not found")
         }
 
         const { _id } = req.user
 
         if (!title || !content) {
+            res
+                .status(400)
+                .json(
+                    new ApiResponse(400, {}, "Title and content are required")
+                )
             throw new ApiError(400, "Title and content are required")
         }
 
@@ -43,6 +58,11 @@ const createTodo = asyncHandler(
         })
 
         if (!todo) {
+            res
+                .status(500)
+                .json(
+                    new ApiResponse(500, {}, "Something went wrong, while creating todo")
+                )
             throw new ApiError(500, "Something went wrong, while creating todo")
         }
 
@@ -58,6 +78,11 @@ const updateTodo = asyncHandler(
     async (req: Request, res: Response) => {
 
         if (req.user == undefined) {
+            res
+                .status(401)
+                .json(
+                    new ApiResponse(400, {}, "Token not found")
+                )
             throw new ApiError(400, "Token not found")
         }
 
@@ -66,24 +91,39 @@ const updateTodo = asyncHandler(
         const { _id } = req.user
 
         if (!(content || title || completed) || !todo_id) {
+            res
+                .status(400)
+                .json(
+                    new ApiResponse(400, {}, "All fields are required")
+                )
             throw new ApiError(400, "todo_id / content / title / completed is required")
         }
 
         const todo = await Todo.findById(todo_id)
 
         if (!todo) {
+            res
+                .status(404)
+                .json(
+                    new ApiResponse(400, {}, "Task not found")
+                )
             throw new ApiError(404, "Todo not found")
         }
 
         if (todo.user.toString() !== _id.toString()) {
+            res
+                .status(401)
+                .json(
+                    new ApiResponse(400, {}, "Unauthorized request")
+                )
             throw new ApiError(401, "Unathorized request")
         }
 
         if (content) todo.content = content
         if (title) todo.title = title
         if (completed) {
-            if(completed === "complete") todo.completed = true
-            if(completed === "incomplete") todo.completed = false
+            if (completed === "complete") todo.completed = true
+            if (completed === "incomplete") todo.completed = false
         }
 
 
@@ -100,6 +140,11 @@ const updateTodo = asyncHandler(
 const deleteTodo = asyncHandler(
     async (req: Request, res: Response) => {
         if (req.user == undefined) {
+            res
+                .status(401)
+                .json(
+                    new ApiResponse(400, {}, "Token not found")
+                )
             throw new ApiError(400, "Token not found")
         }
 

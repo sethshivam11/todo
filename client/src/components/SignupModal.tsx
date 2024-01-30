@@ -5,6 +5,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { CheckboxDemo } from "./CheckboxDemo";
 import { Input } from "@/components/ui/input";
@@ -48,8 +49,8 @@ const SignupModal = ({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setLoading(false)
-    const toastLoading = toast.loading("Please wait")
+    setLoading(false);
+    const toastLoading = toast.loading("Please wait");
     fetch("/api/v1/users/register", {
       method: "post",
       headers: {
@@ -65,20 +66,29 @@ const SignupModal = ({
           setLoginModal(false);
           fetchTodos();
           toast.success("Successfully logged in");
+          setCreds({
+            fullName: "",
+            email: "",
+            password: "",
+          });
+        }
+        if (!res.success) {
+          toast.error(res.message);
         }
       })
       .catch((err) => {
         console.log(err);
         toast.error("Something went wrong!");
-      }).finally(() => {
-        toast.dismiss(toastLoading)
-        setLoading(false)
       })
+      .finally(() => {
+        toast.dismiss(toastLoading);
+        setLoading(false);
+      });
   };
 
   return (
     <Dialog open={!loginModal && !isLoggedIn}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] dark:selection:bg-slate-800 selection:bg-gray-300">
         <DialogHeader>
           <DialogTitle>Register</DialogTitle>
           <DialogDescription>Create an account to continue</DialogDescription>
@@ -113,24 +123,41 @@ const SignupModal = ({
           />
           <div className="my-2">
             <CheckboxDemo
+              uniqueId="register-check"
               setShowPassword={setShowPassword}
               label="Show Password"
-              showPassword={showPassword}
             />
           </div>
-          <Button type="submit" className="mt-4" disabled={loading}>
-            Register
-          </Button>
-          <Button
-            variant="outline"
-            className="ml-2"
-            onClick={() => {
-              setLoginModal(true);
-              setIsLoggedIn(false);
-            }}
-          >
-            Login
-          </Button>
+          <DialogFooter>
+            <Button
+              type="submit"
+              className="mt-2 selection:text-black dark:selection:text-white"
+              disabled={
+                loading ||
+                creds.password.length < 6 ||
+                creds.email.length < 4 ||
+                creds.fullName.length < 1
+              }
+            >
+              Register
+            </Button>
+            <Button
+              variant="outline"
+              type="button"
+              className="mt-2"
+              onClick={() => {
+                setLoginModal(true);
+                setIsLoggedIn(false);
+                setCreds({
+                  fullName: "",
+                  email: "",
+                  password: "",
+                });
+              }}
+            >
+              Login
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

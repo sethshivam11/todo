@@ -35,6 +35,9 @@ const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
           fetchTodos();
           toast.success("Task marked as completed");
         }
+        if (!res.success) {
+          toast.error(res.message);
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -62,6 +65,9 @@ const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
           fetchTodos();
           toast.success("Task deleted");
         }
+        if (!res.success) {
+          toast.error(res.message);
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -78,7 +84,7 @@ const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger
-            className={`hover:bg-gray-100 hover:dark:bg-slate-800 p-2 rounded-md
+            className={`hover:bg-gray-300 hover:dark:bg-slate-800 p-2 rounded-md
             ${todo.completed ? "hidden" : ""}`}
             disabled={loading}
             onClick={() => handleComplete("complete")}
@@ -86,14 +92,16 @@ const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
             <Square />
           </TooltipTrigger>
           <TooltipContent>
-            <p>Mark as complete</p>
+            <p className="selection:text-black dark:selection:bg-gray-400">
+              Mark as complete
+            </p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger
-            className={`hover:bg-gray-100 hover:dark:bg-slate-800 p-2 rounded-md
+            className={`hover:bg-gray-300 hover:dark:bg-slate-800 p-2 rounded-md
             ${todo.completed ? "" : "hidden"}`}
             disabled={loading}
             onClick={() => handleComplete("incomplete")}
@@ -101,21 +109,25 @@ const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
             <CheckSquare2 />
           </TooltipTrigger>
           <TooltipContent>
-            <p>Mark as incomplete</p>
+            <p className="selection:text-black dark:selection:bg-gray-400">
+              Mark as incomplete
+            </p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger
-            className="hover:bg-gray-100 hover:dark:bg-slate-800 p-2 rounded-md"
+            className="hover:bg-gray-300 hover:dark:bg-slate-800 p-2 rounded-md"
             disabled={loading}
             onClick={() => setEditModal(true)}
           >
             <Edit />
           </TooltipTrigger>
           <TooltipContent>
-            <p>Edit task</p>
+            <p className="selection:text-black dark:selection:bg-gray-400">
+              Edit task
+            </p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -129,7 +141,9 @@ const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
             <Trash />
           </TooltipTrigger>
           <TooltipContent>
-            <p>Delete Task</p>
+            <p className="selection:text-black dark:selection:bg-gray-400">
+              Delete Task
+            </p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

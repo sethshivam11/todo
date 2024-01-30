@@ -33,6 +33,9 @@ function App() {
         if (res.success) {
           setTodos(res.data);
         }
+        if (!res.success) {
+          toast.error(res.message);
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -58,7 +61,7 @@ function App() {
       <Routes>
         <Route
           element={
-            <>
+            <main className="dark:selection:bg-slate-800 selection:bg-gray-300">
               <ModeToggle />
               <AvatarButton
                 setLoginModal={setLoginModal}
@@ -90,11 +93,11 @@ function App() {
                 setCreateModal={setCreateModal}
                 fetchTodos={fetchTodos}
               />
-            </>
+            </main>
           }
           path="/"
         />
-        <Route element={<ProfilePage />} path="/account" />
+        <Route element={<ProfilePage />} path="/profile" />
       </Routes>
     </ThemeProvider>
   );

@@ -24,7 +24,7 @@ const Todo = ({ todo, fetchTodos }: Props) => {
   }
   const [editModal, setEditModal] = useState(false);
   return (
-    <div className="flex flex-row justify-between items-start ring-1 dark:ring-gray-200 ring-gray-800 rounded-lg p-3">
+    <div className="flex 2xl:flex-row 2xl:gap-0 xl:flex-row xl:gap-0 lg:flex-row lg:gap-0 gap-4 flex-col justify-between items-start ring-1 dark:ring-gray-200 ring-gray-800 rounded-lg p-3">
       <div className={editModal ? "hidden" : ""}>
         <h1 className="block text-xl">{todo.title}</h1>
         <p className="text-md">{todo.content}</p>

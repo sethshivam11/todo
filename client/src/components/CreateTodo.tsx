@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "./ui/textarea";
 
 interface Props {
   createModal: boolean;
@@ -59,6 +60,9 @@ export default function CreateTodo({
           });
           toast.success("Task added successfully");
         }
+        if(!res.success){
+          toast.error(res.message)
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -76,7 +80,7 @@ export default function CreateTodo({
   };
   return (
     <Dialog open={createModal}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] dark:selection:bg-slate-800 selection:bg-gray-300">
         <DialogHeader>
           <DialogTitle>Create Task</DialogTitle>
           <DialogDescription>
@@ -94,16 +98,20 @@ export default function CreateTodo({
             onChange={handleChange}
           />
           <Label htmlFor="create-content">Task</Label>
-          <Input
+          <Textarea
             name="content"
             id="create-content"
-            type="text"
             className="my-1"
             value={todo.content}
             onChange={handleChange}
           />
           <DialogFooter>
-            <Button type="submit" size="lg" className="mt-4" disabled={loading}>
+            <Button
+              type="submit"
+              size="lg"
+              className="mt-4 selection:text-black dark:selection:text-white"
+              disabled={loading}
+            >
               Create
             </Button>
             <Button
