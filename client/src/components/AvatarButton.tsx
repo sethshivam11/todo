@@ -5,55 +5,32 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@radix-ui/react-dropdown-menu";
-import toast from "react-hot-toast";
-import {
-  Dispatch,
-  SetStateAction,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
+import { useEffect } from "react";
+import { useUser } from "@/context/UserContextProvider";
 
-interface Props {
-  setLoginModal: Dispatch<SetStateAction<boolean>>;
-  setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
-}
-
-const AvatarButton = ({ setLoginModal, setIsLoggedIn }: Props) => {
-  const [avatar, setAvatar] = useState("");
-  const fetchUser = useCallback(() => {
-    fetch("/api/v1/users/get", {
-      method: "get",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
-      },
-    })
-      .then((parsed) => parsed.json())
-      .then((res) => {
-        if (res.success) {
-          setAvatar(res.data.avatar);
-          localStorage.setItem("todo-avatar", res.data.avatar);
-        }
-        if (!res.success) {
-          toast.error(res.message);
-        }
-      })
-      .catch((err) => console.log(err));
-  }, []);
+const AvatarButton = () => {
+  const { fetchUser, isLoggedIn, setLoginModal, setIsLoggedIn, user, setUser } =
+    useUser();
   useEffect(() => {
     const savedAvatar = localStorage.getItem("todo-avatar");
-    if (savedAvatar) setAvatar(savedAvatar);
-    else fetchUser();
-  }, []);
+    if (savedAvatar) setUser({...user, avatar: savedAvatar});
+    else {
+      fetchUser();
+    }
+    if (!isLoggedIn) localStorage.removeItem("todo-avatar");
+    else {
+      fetchUser();
+    }
+  }, [isLoggedIn]);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="pointer-cursor z-10">
         <Button
           size="icon"
           className="absolute lg:top-0 xl:top-0 2xl:top-0 md:top-0 mt-8 right-20 overflow-hidden rounded-full hover:ring-2 dark:hover:ring-white hover:ring-slate-950"
+          title=""
         >
-          <img src={avatar} alt="" />
+          <img src={user.avatar} alt="" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

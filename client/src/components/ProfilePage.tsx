@@ -1,96 +1,76 @@
-import {
-  FormEvent,
-  useCallback,
-  useEffect,
-  useState,
-  useRef,
-  ChangeEvent,
-} from "react";
+import { FormEvent, useEffect, useState, ChangeEvent } from "react";
 import SkeletonProfile from "./SkeletonProfile";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { ChevronLeft } from "lucide-react";
 import { Label } from "@radix-ui/react-label";
-import toast, { Toaster } from "react-hot-toast";
 import UpdateAvatar from "./UpdateAvatar";
+import { useUser } from "@/context/UserContextProvider";
+import { CheckboxDemo } from "./CheckboxDemo";
+import toast from "react-hot-toast";
 
 const ProfilePage = () => {
-  const fullNameInput = useRef<HTMLInputElement>(null);
-  const passwordInput = useRef<HTMLInputElement>(null);
-  const [loading, setLoading] = useState(true);
+  const { fetchUser, loading, updateDetails, user, updatePassword } = useUser();
+  const [updateLoading, setUpdateLoading] = useState(false);
   const [editDetails, setEditDetails] = useState(false);
   const [updateAvatarModal, setUpdateAvatarModal] = useState(false);
-  const [user, setUser] = useState({
+  const [showPwd, setShowPwd] = useState(false);
+  const [creds, setCreds] = useState({
     fullName: "",
     email: "",
     avatar: "",
-    password: "",
+    password: "123456",
   });
-  const fetchUser = useCallback(() => {
-    setLoading(true);
-    fetch("/api/v1/users/get", {
-      method: "get",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
-      },
-    })
-      .then((parsed) => parsed.json())
-      .then((res) => {
-        if (res.success) {
-          setLoading(false);
-          setUser(res.data);
-          setUser({ ...res.data, password: "123456" });
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false);
-        toast.error("Something went wrong!");
-      });
-  }, []);
 
-  const handleUpdate = (e: FormEvent) => {
+  const handleDetailsUpdate = async (e: FormEvent) => {
     e.preventDefault();
-    const toastLoading = toast.loading("Please wait");
-    fetch(`/api/v1/users/updateDetails`, {
-      method: "put",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
-      },
-      body: JSON.stringify(user),
-    })
-      .then((parsed) => parsed.json())
-      .then((res) => {
-        toast.dismiss(toastLoading);
-        if (res.success) {
-          toast.success("Details updated");
-          setEditDetails(false)
-        }
-        if (!res.success) {
-          toast.error(res.message);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        toast.error("Something went wrong!");
-        toast.dismiss(toastLoading);
-      });
+    setUpdateLoading(true);
+    await updateDetails({
+      fullName: creds.fullName,
+      email: creds.email,
+      password: creds.password,
+    });
+    setUpdateLoading(false);
+    setEditDetails(false);
   };
+
   const handleChange = (e: ChangeEvent) => {
     const input = e.target as HTMLInputElement;
-    setUser({ ...user, [input.name]: input.value });
+    setCreds({ ...creds, [input.name]: input.value });
   };
+
+  const [passwords, setPasswords] = useState({
+    oldPassword: "123456",
+    newPassword: "123456",
+  });
+  const [editPasswords, setEditPasswords] = useState(false);
+  const [showPasswords, setShowPasswords] = useState(false);
+  const handlePasswordUpdate = async (e: FormEvent) => {
+    e.preventDefault();
+    setUpdateLoading(true);
+    await updatePassword(passwords.oldPassword, passwords.newPassword);
+    setUpdateLoading(false);
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("todo-accessToken");
     if (!token) window.location.href = "/";
-    else fetchUser();
+    fetchUser();
   }, []);
+
+  useEffect(() => {
+    if (user.fullName && !editDetails) {
+      setCreds({
+        fullName: user.fullName,
+        avatar: user.avatar,
+        email: user.email,
+        password: "123456",
+      });
+    }
+  }, [user]);
 
   return (
     <main className="w-full 2xl:p-16 xl:p-16 lg:p-16 md:p-10 p-6">
-      <Toaster position="bottom-center" />
       <Button
         onClick={() => (window.location.href = "/")}
         size="default"
@@ -109,20 +89,22 @@ const ProfilePage = () => {
         <>
           <img
             src={user.avatar}
-            className="h-32 w-32 rounded-full mb-8"
+            className="h-32 w-32 rounded-full mb-8 cursor-pointer"
             alt=""
+            // onClick={() => setUpdateAvatarModal(true)}
           />
-          <form onSubmit={handleUpdate}>
+          <form onSubmit={handleDetailsUpdate}>
+            <h3 className="text-2xl my-4">Update email and name</h3>
             <Label htmlFor="profile-name">Name</Label>
             <Input
               id="profile-name"
               name="fullName"
               type="text"
-              value={user.fullName}
+              value={creds.fullName}
               className="w-[350px] my-2"
               disabled={!editDetails}
-              ref={fullNameInput}
               onChange={handleChange}
+              autoComplete="name"
             />
             <Label htmlFor="profile-email">Email</Label>
             <Input
@@ -130,43 +112,119 @@ const ProfilePage = () => {
               name="email"
               type="text"
               className="w-[350px] my-2"
-              value={user.email}
+              value={creds.email}
               disabled={!editDetails}
               onChange={handleChange}
+              autoComplete="email"
             />
             <Label htmlFor="profile-password">Password</Label>
             <Input
               id="profile-password"
               name="password"
-              type={editDetails ? "text" : "password"}
-              value={user.password}
+              type={editDetails && showPwd ? "text" : "password"}
+              value={creds.password}
               className="w-[350px] my-2"
               disabled={!editDetails}
-              ref={passwordInput}
               onChange={handleChange}
+              autoComplete="off"
+            />
+            <CheckboxDemo
+              label="Show password"
+              setShowPassword={setShowPwd}
+              disabled={!editDetails}
+              uniqueId="show-pwd"
             />
             <Button
-              className="my-2"
+              className="my-4"
               type="submit"
               disabled={
+                creds.fullName.length < 1 ||
+                creds.email.length < 4 ||
+                creds.password.length < 6 ||
                 !editDetails ||
-                user.fullName.length < 1 ||
-                user.email.length < 4 ||
-                user.password.length < 6
+                updateLoading
               }
             >
               Update
             </Button>
             <Button
-              className="my-2 ml-2"
+              className="my-4 ml-2"
               type="button"
               variant="outline"
               onClick={() => {
-                setUser({ ...user, password: "" });
+                setCreds({
+                  fullName: user.fullName,
+                  email: user.email,
+                  avatar: user.avatar,
+                  password: "",
+                });
                 setEditDetails((prev) => !prev);
               }}
             >
               {editDetails ? "Cancel" : "Edit"}
+            </Button>
+          </form>
+          <form onSubmit={handlePasswordUpdate} className="mt-12">
+            <h3 className="text-2xl my-4">Update current password</h3>
+            <Label htmlFor="current-password">Current Password</Label>
+            <Input
+              id="current-password"
+              name="oldPassword"
+              type={showPasswords && editPasswords ? "text" : "password"}
+              value={passwords.oldPassword}
+              className="w-[350px] my-2"
+              disabled={!editPasswords}
+              onChange={(e) =>
+                setPasswords({ ...passwords, oldPassword: e.target.value })
+              }
+              autoComplete="off"
+            />
+            <Label htmlFor="new-password">New Password</Label>
+            <Input
+              id="new-password"
+              name="newPassword"
+              type={showPasswords && editPasswords ? "text" : "password"}
+              value={passwords.newPassword}
+              className="w-[350px] my-2"
+              disabled={!editPasswords}
+              onChange={(e) =>
+                setPasswords({ ...passwords, newPassword: e.target.value })
+              }
+              autoComplete="off"
+            />
+            <CheckboxDemo
+              label="Show passwords"
+              setShowPassword={setShowPasswords}
+              uniqueId="update-password"
+              disabled={!editPasswords}
+            />
+            <Button
+              type="submit"
+              className="mt-4"
+              disabled={
+                passwords.oldPassword.length < 6 ||
+                passwords.newPassword.length < 6 ||
+                !editPasswords ||
+                updateLoading
+              }
+            >
+              Update
+            </Button>
+            <Button
+              type="reset"
+              variant="outline"
+              className=" ml-2 mt-4"
+              onClick={() => {
+                // setEditPasswords((prev) => !prev);
+                // setPasswords({
+                //   oldPassword: "",
+                //   newPassword: "",
+                // });
+                setEditPasswords(false);
+                toast("This feature is under development mode");
+              }}
+            >
+              {editPasswords ? "Cancel" : "Edit"}
             </Button>
           </form>
         </>

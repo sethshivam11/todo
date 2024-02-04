@@ -21,9 +21,9 @@ import todoRouter from "./routes/todo.route"
 import noRoutes from "./routes/no.route"
 
 // Route declarations
-app.use("/api/v1", noRoutes)
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/todo", todoRouter)
+app.use("/api/v1", noRoutes)
 
 
 // Deployment

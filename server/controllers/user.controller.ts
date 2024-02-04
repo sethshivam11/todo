@@ -153,7 +153,8 @@ const updateAvatar = asyncHandler(
             throw new ApiError(404, "User not found")
         }
 
-        user.save({ validateBeforeSave: false })
+        user.avatar = avatar
+        await user.save({ validateBeforeSave: false })
         user.password = ""
 
         return res

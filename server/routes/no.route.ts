@@ -9,6 +9,6 @@ const noRoute = (req: Request, res: Response) => {
 }
 const router = Router()
 
-router.route("/").get(noRoute).post(noRoute)
+router.route("/*").get(noRoute).post(noRoute).put(noRoute).patch(noRoute)
 
 export default router

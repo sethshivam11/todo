@@ -6,77 +6,27 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import toast from "react-hot-toast";
 import { TodoInterface } from "./Todo";
+import { useTodo } from "@/context/TodoContextProvider";
 
 interface Props {
-  completed: boolean;
-  setEditModal: Dispatch<SetStateAction<boolean>>;
   todo: TodoInterface;
-  fetchTodos: Function;
+  setEditModal: Dispatch<SetStateAction<boolean>>;
 }
 
-const TodoOptions = ({ setEditModal, todo, fetchTodos }: Props) => {
+const TodoOptions = ({ todo, setEditModal }: Props) => {
+  const { deleteTodo, editTodo } = useTodo();
   const [loading, setLoading] = useState(false);
-  const handleComplete = (completed: string) => {
+  const handleComplete = async (completed: string) => {
     setLoading(true);
-    const toastLoading = toast.loading("Please wait");
-    fetch(`/api/v1/todo/update/${todo._id}`, {
-      method: "put",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
-      },
-      body: JSON.stringify({ completed }),
-    })
-      .then((parsed) => parsed.json())
-      .then((res) => {
-        if (res.success) {
-          fetchTodos();
-          toast.success("Task marked as completed");
-        }
-        if (!res.success) {
-          toast.error(res.message);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        toast.error("Something went wrong!");
-      })
-      .finally(() => {
-        setLoading(false);
-        toast.dismiss(toastLoading);
-      });
+    await editTodo({ completed, _id: todo._id });
+    setLoading(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     setLoading(true);
-    const toastLoading = toast.loading("Please wait");
-    fetch(`/api/v1/todo/delete/${todo._id}`, {
-      method: "delete",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
-      },
-    })
-      .then((parsed) => parsed.json())
-      .then((res) => {
-        if (res.success) {
-          fetchTodos();
-          toast.success("Task deleted");
-        }
-        if (!res.success) {
-          toast.error(res.message);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        toast.error("Something went wrong!");
-      })
-      .finally(() => {
-        setLoading(false);
-        toast.dismiss(toastLoading);
-      });
+    await deleteTodo(todo._id);
+    setLoading(false)
   };
 
   return (

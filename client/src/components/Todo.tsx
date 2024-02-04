@@ -4,7 +4,6 @@ import EditModal from "./EditModal";
 
 interface Props {
   todo: TodoInterface;
-  fetchTodos: Function
 }
 
 export interface TodoInterface {
@@ -17,11 +16,12 @@ export interface TodoInterface {
   updatedAt: string
 }
 
-const Todo = ({ todo, fetchTodos }: Props) => {
+const Todo = ({ todo }: Props) => {
   const convertToLocalDate = (givenDate: string) => {
     const dt = new Date(givenDate)
     return dt.toLocaleString("en-IN")
   }
+
   const [editModal, setEditModal] = useState(false);
   return (
     <div className="flex 2xl:flex-row 2xl:gap-0 xl:flex-row xl:gap-0 lg:flex-row lg:gap-0 gap-4 flex-col justify-between items-start ring-1 dark:ring-gray-200 ring-gray-800 rounded-lg p-3">
@@ -32,17 +32,14 @@ const Todo = ({ todo, fetchTodos }: Props) => {
       </div>
       {editModal ? (
         <EditModal
-        fetchTodos={fetchTodos}
           editModal={editModal}
           oldTodo={todo}
           setEditModal={setEditModal}
         />
       ) : (
         <TodoOptions
-          completed={todo.completed}
           setEditModal={setEditModal}
           todo={todo}
-          fetchTodos={fetchTodos}
         />
       )}
     </div>

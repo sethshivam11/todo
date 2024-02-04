@@ -5,35 +5,19 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
-import {
-  SetStateAction,
-  Dispatch,
-  useState,
-  ChangeEvent,
-  FormEvent,
-} from "react";
-import toast from "react-hot-toast";
+import { useState, ChangeEvent, FormEvent } from "react";
 import { CheckboxDemo } from "./CheckboxDemo";
+import { useTodo } from "@/context/TodoContextProvider";
+import { useUser } from "@/context/UserContextProvider";
 
-interface Props {
-  loginModal: boolean;
-  isLoggedIn: boolean;
-  setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
-  setLoginModal: Dispatch<SetStateAction<boolean>>;
-  fetchTodos: Function;
-}
-
-const LoginModal = ({
-  loginModal,
-  setIsLoggedIn,
-  setLoginModal,
-  isLoggedIn,
-  fetchTodos,
-}: Props) => {
+const LoginModal = () => {
+  const { loginModal, setLoginModal, isLoggedIn, setIsLoggedIn, userLogin } =
+    useUser();
+  const { fetchTodos } = useTodo();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [creds, setCreds] = useState({
@@ -46,42 +30,15 @@ const LoginModal = ({
     setCreds({ ...creds, [input.name]: input.value });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    localStorage.removeItem("todo-accessToken");
     setLoading(true);
-    const toastLoading = toast.loading("Please wait");
-    fetch("/api/v1/users/login", {
-      method: "post",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(creds),
-    })
-      .then((parsed) => parsed.json())
-      .then((res) => {
-        if (res.success) {
-          localStorage.setItem("todo-accessToken", res.data.accessToken);
-          setIsLoggedIn(true);
-          setLoginModal(false);
-          setCreds({
-            email: "",
-            password: ""
-          })
-          fetchTodos();
-          toast.success("Successfully logged in");
-        }
-        if(!res.success){
-          toast.error(res.message)
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        toast.error("Something went wrong!");
-      })
-      .finally(() => {
-        toast.dismiss(toastLoading);
-        setLoading(false);
-      });
+    await userLogin(creds);
+    setIsLoggedIn(true);
+    setLoginModal(false);
+    setLoading(false);
+    fetchTodos();
   };
 
   return (

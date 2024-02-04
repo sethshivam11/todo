@@ -2,7 +2,13 @@ import React, { Dispatch, SetStateAction } from "react"
 
 interface UserContext {
     user: UserInterface,
+    isLoggedIn: boolean,
+    loginModal: boolean,
+    loading: boolean,
+    setLoading: Dispatch<SetStateAction<boolean>>,
+    setLoginModal: Dispatch<SetStateAction<boolean>>,
     setUser: Dispatch<SetStateAction<UserInterface>>,
+    setIsLoggedIn: Dispatch<SetStateAction<boolean>>,
     fetchUser: Function,
     updateDetails: Function,
     updatePassword: Function,
@@ -26,11 +32,17 @@ export const UserContext = React.createContext<UserContext>({
         password: "",
         avatar: ""
     },
-    fetchUser: () => {},
-    updateDetails: () => {},
-    updatePassword: () => {},
-    updateAvatar: () => {},
-    userLogin: () => {},
-    userRegister: () => {},
-    setUser: () => {}
+    loading: false,
+    isLoggedIn: false,
+    loginModal: false,
+    setLoading: () => {},
+    setLoginModal: () => { },
+    setIsLoggedIn: () => { },
+    fetchUser: () => { },
+    updateDetails: () => { },
+    updatePassword: () => { },
+    updateAvatar: () => { },
+    userLogin: () => { },
+    userRegister: () => { },
+    setUser: () => { }
 })

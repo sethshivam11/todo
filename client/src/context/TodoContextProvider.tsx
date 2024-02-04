@@ -1,13 +1,18 @@
 import React from "react";
 import { TodoContext } from "./TodoContext";
 import { TodoInterface } from "@/components/Todo";
+import toast from "react-hot-toast";
 
 export const TodoContextProvider = (props: React.PropsWithChildren<{}>) => {
   const [todos, setTodos] = React.useState<TodoInterface[]>([]);
-
-  const fetchTodos = () => {
-    if (!localStorage.getItem("todo-accessToken")) return "No token";
-    fetch("/api/v1/todo/get", {
+  const [createModal, setCreateModal] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const fetchTodos = async () => {
+    if(!localStorage.getItem("todo-accessToken")){
+      return;
+    }
+    setLoading(true);
+    await fetch("/api/v1/todo/get", {
       method: "get",
       headers: {
         "Content-Type": "application/json",
@@ -18,76 +23,132 @@ export const TodoContextProvider = (props: React.PropsWithChildren<{}>) => {
       .then((res) => {
         if (res.success) {
           setTodos(res.data);
-          return "Success";
+        }
+        if (!res.success) {
+          toast.success(res.message);
         }
       })
       .catch((err) => {
         console.log(err);
-        return "Error";
+        toast.error("Something went wrong!");
       });
+    setLoading(false);
   };
-  const editTodo = (todo: TodoInterface) => {
-    if (!localStorage.getItem("todo-accessToken")) return "No token";
-    if (!todo) return;
-    fetch(`/api/v1/todo/update/${todo._id}`, {
+
+  const editTodo = ({
+    title,
+    content,
+    completed,
+    _id,
+  }: {
+    title: string;
+    content: string;
+    completed: string;
+    _id: string;
+  }) => {
+    if (!localStorage.getItem("todo-accessToken")) {
+      return;
+    }
+    if (!_id || !(title || content || completed)) return;
+    const toastLoading = toast.loading("Please wait...");
+    fetch(`/api/v1/todo/update/${_id}`, {
       method: "put",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
       },
+      body: JSON.stringify({
+        content,
+        title,
+        completed,
+      }),
     })
       .then((parsed) => parsed.json())
       .then((res) => {
         if (res.success) {
           setTodos((todos: TodoInterface[]) =>
             todos.map((prevTodo: TodoInterface) => {
-              if (prevTodo._id.toString() === todo._id.toString()) {
-                prevTodo = todo;
+              if (prevTodo._id.toString() === _id.toString()) {
+                prevTodo = res.data;
               }
               return prevTodo;
             })
           );
-          return "Success";
+          toast.success(
+            completed.length ? `Task marked as ${completed}` : "Task updated",
+            {
+              id: toastLoading,
+            }
+          );
+        }
+        if (!res.success) {
+          toast.error(res.message, {
+            id: toastLoading,
+          });
         }
       })
       .catch((err) => {
+        toast.error("Something went wrong!", {
+          id: toastLoading,
+        });
         console.log(err);
-        return "Error";
       });
   };
+
   const createTodo = (newTodo: {
     content: string;
     title: string;
     completed: boolean;
   }) => {
-    if (!localStorage.getItem("todo-accessToken")) return "No token";
+    if (!localStorage.getItem("todo-accessToken")) {
+      return;
+    }
+    if (!newTodo.title || !newTodo.content) {
+      return;
+    }
+    const toastLoading = toast.loading("Please wait...");
     fetch(`/api/v1/todo/create`, {
       method: "post",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
-        body: JSON.stringify({
-          content: newTodo.content,
-          title: newTodo.content,
-          completed: newTodo.completed,
-        }),
       },
+      body: JSON.stringify({
+        content: newTodo.content,
+        title: newTodo.title,
+        completed: newTodo.completed,
+      }),
     })
       .then((parsed) => parsed.json())
       .then((res) => {
+        console.log(res);
         if (res.success) {
           setTodos([...todos, res.data]);
-          return "Success";
+          toast.success("Task added", {
+            id: toastLoading,
+          });
+          setCreateModal(false);
+        }
+        if (!res.success) {
+          toast.error(res.message, {
+            id: toastLoading,
+          });
         }
       })
       .catch((err) => {
+        toast.error("Something went wrong!", {
+          id: toastLoading,
+        });
         console.log(err);
-        return "Error";
       });
   };
+
   const deleteTodo = (todo_id: string) => {
-    if (!localStorage.getItem("todo-accessToken")) return "No token";
+    if (!localStorage.getItem("todo-accessToken")) {
+      return;
+    }
     if (!todo_id) return;
+    const toastLoading = toast.loading("Please wait...");
     fetch(`/api/v1/todo/delete/${todo_id}`, {
       method: "delete",
       headers: {
@@ -99,17 +160,38 @@ export const TodoContextProvider = (props: React.PropsWithChildren<{}>) => {
       .then((res) => {
         if (res.success) {
           setTodos((todos) => todos.filter((todo) => todo._id !== todo_id));
-          return "Success";
+          toast.success("Task deleted", {
+            id: toastLoading,
+          });
+        }
+        if (!res.success) {
+          toast.error(res.message, {
+            id: toastLoading,
+          });
         }
       })
       .catch((err) => {
+        toast.error("Something went wrong!", {
+          id: toastLoading,
+        });
         console.log(err);
-        return "Error";
       });
   };
+
   return (
     <TodoContext.Provider
-      value={{ todos, setTodos, fetchTodos, createTodo, editTodo, deleteTodo }}
+      value={{
+        todos,
+        setTodos,
+        fetchTodos,
+        createTodo,
+        editTodo,
+        deleteTodo,
+        createModal,
+        loading,
+        setCreateModal,
+        setLoading,
+      }}
     >
       {props.children}
     </TodoContext.Provider>

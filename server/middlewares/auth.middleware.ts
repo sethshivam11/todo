@@ -48,20 +48,11 @@ export const verifyJWT =
 
             next()
         } catch (err) {
-            if (err instanceof TokenExpiredError) {
-                res
-                    .status(401)
-                    .json(
-                        new ApiResponse(401, {}, "Token expired, Please log in again")
-                    );
-            }
-            else {
-                res
-                    .status(401)
-                    .json(
-                        new ApiResponse(401, {}, "Invalid token")
-                    )
-            }
+            res
+                .status(401)
+                .json(
+                    new ApiResponse(401, {}, "Invalid token")
+                )
             next(err)
         }
     }

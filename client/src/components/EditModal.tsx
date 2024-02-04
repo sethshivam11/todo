@@ -6,51 +6,34 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import { Button } from "./ui/button";
 import { TodoInterface } from "./Todo";
 import { Dispatch, SetStateAction } from "react";
-import toast from "react-hot-toast";
 import { Textarea } from "./ui/textarea";
+import { useTodo } from "@/context/TodoContextProvider";
 
 interface Props {
   editModal: boolean;
   oldTodo: TodoInterface;
   setEditModal: Dispatch<SetStateAction<boolean>>;
-  fetchTodos: Function;
 }
 
-const EditModal = ({ editModal, oldTodo, setEditModal, fetchTodos }: Props) => {
+const EditModal = ({ editModal, oldTodo, setEditModal }: Props) => {
   const [loading, setLoading] = useState(false);
+  const { editTodo } = useTodo();
   const [todo, setTodo] = useState({
     content: oldTodo.content,
     title: oldTodo.title,
     completed: oldTodo.completed,
   });
-  const handleSubmit = (e: FormEvent, _id: string) => {
+  const handleSubmit = async (e: FormEvent, oldTodo: TodoInterface) => {
     e.preventDefault();
     setLoading(true);
-    const toastLoading = toast.loading("Please wait");
-    fetch(`/api/v1/todo/update/${oldTodo._id}`, {
-      method: "put",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
-      },
-      body: JSON.stringify(todo),
-    })
-      .then((parsed) => parsed.json())
-      .then((res) => {
-        if (res.success) {
-          setEditModal(false);
-          fetchTodos();
-          toast.success("Successfully updated task");
-        }
-        if (!res.success) {
-          toast.error(res.message);
-        }
-      })
-      .catch((err) => console.log(err))
-      .finally(() => {
-        toast.dismiss(toastLoading);
-        setLoading(false);
-      });
+    await editTodo({
+      title: todo.title,
+      content: todo.content,
+      completed: todo.completed,
+      _id: oldTodo._id
+    });
+    setLoading(false);
+    setEditModal(false);
   };
 
   const handleChange = (e: ChangeEvent) => {
@@ -63,7 +46,7 @@ const EditModal = ({ editModal, oldTodo, setEditModal, fetchTodos }: Props) => {
         <DialogHeader>
           <DialogTitle className="mb-2">Edit Task</DialogTitle>
         </DialogHeader>
-        <form onSubmit={(e) => handleSubmit(e, oldTodo._id)}>
+        <form onSubmit={(e) => handleSubmit(e, oldTodo)}>
           <Label htmlFor="todo-title">Title</Label>
           <Input
             name="title"

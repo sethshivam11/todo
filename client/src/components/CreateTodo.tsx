@@ -1,10 +1,4 @@
-import {
-  ChangeEvent,
-  Dispatch,
-  FormEvent,
-  SetStateAction,
-  useState,
-} from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,63 +9,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import toast from "react-hot-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "./ui/textarea";
+import { useTodo } from "@/context/TodoContextProvider";
 
-interface Props {
-  createModal: boolean;
-  setCreateModal: Dispatch<SetStateAction<boolean>>;
-  fetchTodos: Function;
-}
-
-export default function CreateTodo({
-  createModal,
-  setCreateModal,
-  fetchTodos,
-}: Props) {
+export default function CreateTodo() {
   const [loading, setLoading] = useState(false);
+  const { createTodo, createModal, setCreateModal } = useTodo();
   const [todo, setTodo] = useState({
     title: "",
     content: "",
     completed: false,
   });
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setLoading(true)
-    const toastLoading = toast.loading("Please wait");
-    fetch("/api/v1/todo/create", {
-      method: "post",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
-      },
-      body: JSON.stringify(todo),
-    })
-      .then((parsed) => parsed.json())
-      .then((res) => {
-        if (res.success) {
-          fetchTodos();
-          setCreateModal(false);
-          setTodo({
-            title: "",
-            content: "",
-            completed: false,
-          });
-          toast.success("Task added successfully");
-        }
-        if(!res.success){
-          toast.error(res.message)
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        toast.error("Something went wrong!")
-      })
-      .finally(() => {
-        toast.dismiss(toastLoading)
-        setLoading(false)
-      });
+    setLoading(true);
+    console.log(todo)
+    await createTodo(todo);
+    setLoading(false)
   };
 
   const handleChange = (e: ChangeEvent) => {
