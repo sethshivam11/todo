@@ -79,7 +79,7 @@ function UserContextProvider(props: React.PropsWithChildren<{}>) {
     if (!oldPassword || !newPassword)
       return console.log("All fields are required");
     await fetch("/api/v1/users/changePassword", {
-      method: "patch",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
@@ -101,32 +101,64 @@ function UserContextProvider(props: React.PropsWithChildren<{}>) {
         console.log(err);
       });
   };
-  const updateAvatar = (avatar: string) => {
+  const updateAvatar = async (file: File) => {
     if (!localStorage.getItem("todo-accessToken")) {
       return console.log("Token not found");
     }
-    if (!avatar) return console.log("Avatar is required");
-    fetch("/api/v1/users/updateAvatar", {
-      method: "patch",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
-      },
-      body: JSON.stringify({ avatar }),
+    if (!file) return console.log("Please provide a file");
+    const toastLoading = toast.loading("Uploading file...");
+
+    // Upload to cloudinary
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "todoapp");
+    fetch(`https://api.cloudinary.com/v1_1/dv3qbj0bn/image/upload`, {
+      method: "POST",
+      body: data,
     })
       .then((parsed) => parsed.json())
       .then((res) => {
-        if (res.success) {
-          setUser(res.data);
-          return "Success";
+        const avatar = res.secure_url;
+        if (!avatar) {
+          toast.error("Something went wrong!", {
+            id: toastLoading,
+          });
+          return console.log("Avatar is required");
         }
-        if (!res.success) {
-          return res.message;
-        }
+        // Save it to backend
+        fetch("/api/v1/users/updateAvatar", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
+          },
+          body: JSON.stringify({ avatar }),
+        })
+          .then((parsed) => parsed.json())
+          .then((res) => {
+            if (res.success) {
+              setUser(res.data);
+              toast.success("Profile picture updated", {
+                id: toastLoading,
+              });
+            } else if (!res.success) {
+              toast.error(res.message, {
+                id: toastLoading,
+              });
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            toast.error("Something went wrong!", {
+              id: toastLoading,
+            });
+          });
       })
       .catch((err) => {
         console.log(err);
-        toast.error("Something went wrong!");
+        toast.error("Something went wrong!", {
+          id: toastLoading,
+        });
       });
   };
   const userLogin = ({

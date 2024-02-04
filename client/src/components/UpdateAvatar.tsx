@@ -8,7 +8,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import toast from "react-hot-toast";
 import { Label } from "@/components/ui/label";
+import { useUser } from "@/context/UserContextProvider";
 
 interface Props {
   updateAvatarModal: boolean;
@@ -19,18 +21,21 @@ export default function UpdateAvatar({
   updateAvatarModal,
   setUpdateAvatarModal,
 }: Props) {
-  // const cloudinary = {
-  //   cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
-  //   apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY,
-  //   apiSecret: import.meta.env.VITE_CLOUDINARY_API_SECRET,
-  // };
+  const { updateAvatar } = useUser();
+
   const fileInput = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!fileInput.current?.files || !fileInput.current.files[0]) {
+      return toast.error("Please select a file");
+    }
     setLoading(true);
+    await updateAvatar(fileInput.current.files[0]);
     setLoading(false);
+    setUpdateAvatarModal(false);
   };
+
   return (
     <Dialog open={updateAvatarModal}>
       <DialogContent className="sm:max-w-[425px] dark:selection:bg-slate-800 selection:bg-gray-300">

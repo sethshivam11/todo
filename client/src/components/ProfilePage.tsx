@@ -7,7 +7,6 @@ import { Label } from "@radix-ui/react-label";
 import UpdateAvatar from "./UpdateAvatar";
 import { useUser } from "@/context/UserContextProvider";
 import { CheckboxDemo } from "./CheckboxDemo";
-import toast from "react-hot-toast";
 
 const ProfilePage = () => {
   const { fetchUser, loading, updateDetails, user, updatePassword } = useUser();
@@ -25,6 +24,7 @@ const ProfilePage = () => {
   const handleDetailsUpdate = async (e: FormEvent) => {
     e.preventDefault();
     setUpdateLoading(true);
+    setShowPwd(false);
     await updateDetails({
       fullName: creds.fullName,
       email: creds.email,
@@ -50,6 +50,8 @@ const ProfilePage = () => {
     setUpdateLoading(true);
     await updatePassword(passwords.oldPassword, passwords.newPassword);
     setUpdateLoading(false);
+    setEditPasswords(false);
+    setShowPasswords(false);
   };
 
   useEffect(() => {
@@ -91,7 +93,7 @@ const ProfilePage = () => {
             src={user.avatar}
             className="h-32 w-32 rounded-full mb-8 cursor-pointer"
             alt=""
-            // onClick={() => setUpdateAvatarModal(true)}
+            onClick={() => setUpdateAvatarModal(true)}
           />
           <form onSubmit={handleDetailsUpdate}>
             <h3 className="text-2xl my-4">Update email and name</h3>
@@ -215,13 +217,11 @@ const ProfilePage = () => {
               variant="outline"
               className=" ml-2 mt-4"
               onClick={() => {
-                // setEditPasswords((prev) => !prev);
+                setEditPasswords((prev) => !prev);
                 // setPasswords({
                 //   oldPassword: "",
                 //   newPassword: "",
                 // });
-                setEditPasswords(false);
-                toast("This feature is under development mode");
               }}
             >
               {editPasswords ? "Cancel" : "Edit"}
