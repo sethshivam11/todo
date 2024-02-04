@@ -1,8 +1,10 @@
 import React from "react";
 import { UserContext, UserInterface } from "./UserContext";
 import toast from "react-hot-toast";
+import { useTodo } from "./TodoContextProvider";
 
 function UserContextProvider(props: React.PropsWithChildren<{}>) {
+  const { fetchTodos } = useTodo();
   const [user, setUser] = React.useState<UserInterface>({
     fullName: "",
     email: "",
@@ -14,7 +16,7 @@ function UserContextProvider(props: React.PropsWithChildren<{}>) {
   const [loading, setLoading] = React.useState(true);
 
   const fetchUser = async () => {
-    if(!localStorage.getItem("todo-accessToken")){
+    if (!localStorage.getItem("todo-accessToken")) {
       return console.log("Token not found");
     }
     setLoading(true);
@@ -45,7 +47,8 @@ function UserContextProvider(props: React.PropsWithChildren<{}>) {
       return console.log("Token not found");
     }
     const { fullName, email, password } = newDetails;
-    if (!fullName || !email || !password) return console.log("All fields are required");
+    if (!fullName || !email || !password)
+      return console.log("All fields are required");
     fetch("/api/v1/users/updateDetails", {
       method: "put",
       headers: {
@@ -73,12 +76,13 @@ function UserContextProvider(props: React.PropsWithChildren<{}>) {
     if (!localStorage.getItem("todo-accessToken")) {
       return console.log("Token not found");
     }
-    if (!oldPassword || !newPassword) return console.log("All fields are required");
+    if (!oldPassword || !newPassword)
+      return console.log("All fields are required");
     await fetch("/api/v1/users/changePassword", {
       method: "patch",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("todo-accessToken")}`,
+        Authorization: `Bearer ${localStorage.getItem("todo-accessToken")}`,
       },
       body: JSON.stringify({ oldPassword, newPassword }),
     })
@@ -101,7 +105,7 @@ function UserContextProvider(props: React.PropsWithChildren<{}>) {
     if (!localStorage.getItem("todo-accessToken")) {
       return console.log("Token not found");
     }
-    if(!avatar) return console.log("Avatar is required");
+    if (!avatar) return console.log("Avatar is required");
     fetch("/api/v1/users/updateAvatar", {
       method: "patch",
       headers: {
@@ -134,7 +138,7 @@ function UserContextProvider(props: React.PropsWithChildren<{}>) {
   }) => {
     if (localStorage.getItem("todo-accessToken"))
       localStorage.removeItem("todo-accessToken");
-    if(!email || !password) return console.log("All fields are required");
+    if (!email || !password) return console.log("All fields are required");
     fetch("/api/v1/users/login", {
       method: "post",
       headers: {
@@ -147,6 +151,7 @@ function UserContextProvider(props: React.PropsWithChildren<{}>) {
         if (res.success) {
           setUser(res.data.user);
           localStorage.setItem("todo-accessToken", res.data.accessToken);
+          fetchTodos();
           toast.success("Logged in successfully");
         }
         if (!res.success) {
@@ -169,7 +174,8 @@ function UserContextProvider(props: React.PropsWithChildren<{}>) {
   }) => {
     if (!localStorage.getItem("todo-accessToken"))
       localStorage.removeItem("todo-accessToken");
-    if(!fullName || !email || !password) return console.log("All fields are required"); 
+    if (!fullName || !email || !password)
+      return console.log("All fields are required");
     fetch("/api/v1/users/register", {
       method: "post",
       headers: {
@@ -182,6 +188,7 @@ function UserContextProvider(props: React.PropsWithChildren<{}>) {
         if (res.success) {
           setUser(res.data.user);
           localStorage.setItem("todo-accessToken", res.data.accessToken);
+          fetchTodos();
           toast.success("Registered successfully");
         }
         if (!res.success) {

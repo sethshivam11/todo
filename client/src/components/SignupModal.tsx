@@ -12,12 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
 import { useState, ChangeEvent, FormEvent } from "react";
 import { useUser } from "@/context/UserContextProvider";
-import { useTodo } from "@/context/TodoContextProvider";
 
 const SignupModal = () => {
   const { setIsLoggedIn, setLoginModal, isLoggedIn, loginModal, userRegister } =
     useUser();
-  const { fetchTodos } = useTodo();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [creds, setCreds] = useState({
@@ -39,7 +37,6 @@ const SignupModal = () => {
     setIsLoggedIn(true);
     setLoginModal(false);
     setLoading(false);
-    fetchTodos();
   };
 
   return (

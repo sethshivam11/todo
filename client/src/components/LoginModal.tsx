@@ -11,13 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
 import { useState, ChangeEvent, FormEvent } from "react";
 import { CheckboxDemo } from "./CheckboxDemo";
-import { useTodo } from "@/context/TodoContextProvider";
 import { useUser } from "@/context/UserContextProvider";
 
 const LoginModal = () => {
   const { loginModal, setLoginModal, isLoggedIn, setIsLoggedIn, userLogin } =
     useUser();
-  const { fetchTodos } = useTodo();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [creds, setCreds] = useState({
@@ -38,7 +36,6 @@ const LoginModal = () => {
     setIsLoggedIn(true);
     setLoginModal(false);
     setLoading(false);
-    fetchTodos();
   };
 
   return (
@@ -83,6 +80,19 @@ const LoginModal = () => {
               }
             >
               Login
+            </Button>
+            <Button
+              variant="secondary"
+              className="mt-2"
+              type="button"
+              onClick={() => {
+                setCreds({
+                  email: "test@user.com",
+                  password: "123456",
+                });
+              }}
+            >
+              Test User
             </Button>
             <Button
               variant="outline"
