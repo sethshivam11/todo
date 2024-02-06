@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express"
 import path from "path"
 import { UserInterface } from "./models/user.model"
+import errorHandler from "./middlewares/error.middleware"
 
 // Interface for req.user 
 declare module "express" {
@@ -41,6 +42,6 @@ else {
     })
 }
 
-
+app.use(errorHandler)
 
 export default app

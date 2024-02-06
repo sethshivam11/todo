@@ -1,9 +1,10 @@
 interface ApiError {
-    statusCode: number,
-    message: string,
-    errors: string[],
-    data: null,
-    success: boolean
+    statusCode: number;
+    message: string;
+    errors: string[];
+    data: null;
+    success: boolean;
+    stack?: string;
 }
 
 class ApiError extends Error {

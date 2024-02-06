@@ -1,6 +1,8 @@
 import connectDB from "./db";
 import app from "./app"
 
+const port = process.env.PORT || 3000
+
 connectDB()
-    .then(() => app.listen(process.env.PORT, () => console.log(`App is running on port ${process.env.PORT}`)))
+    .then(() => app.listen(port, () => console.log(`App is running on port ${port}`)))
     .catch(err => console.log(`MongoDB connection error! \n${err}`))
