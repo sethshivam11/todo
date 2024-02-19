@@ -24,8 +24,8 @@ export default function CreateTodo() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    console.log(todo)
-    await createTodo(todo);
+    await createTodo(todo)
+    setTodo({ title: "", content: "", completed: false })
     setLoading(false)
   };
 
@@ -65,7 +65,7 @@ export default function CreateTodo() {
               type="submit"
               size="lg"
               className="mt-4 selection:text-black dark:selection:text-white"
-              disabled={loading}
+              disabled={loading || !(todo.title.trim().length > 4) || !(todo.content.trim().length > 5)}
             >
               Create
             </Button>
