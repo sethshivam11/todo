@@ -91,7 +91,7 @@ const ProfilePage = () => {
         <>
           <img
             src={user.avatar}
-            className="h-32 w-32 rounded-full mb-8 cursor-pointer"
+            className="h-32 w-32 rounded-full mb-8 cursor-pointer object-fill"
             alt=""
             onClick={() => setUpdateAvatarModal(true)}
           />

@@ -14,7 +14,8 @@ interface UserContext {
     updatePassword: Function,
     updateAvatar: Function,
     userLogin: Function,
-    userRegister: Function
+    userRegister: Function,
+    removeAvatar: Function
 }
 
 export interface UserInterface {
@@ -44,5 +45,6 @@ export const UserContext = React.createContext<UserContext>({
     updateAvatar: () => { },
     userLogin: () => { },
     userRegister: () => { },
-    setUser: () => { }
+    setUser: () => { },
+    removeAvatar: () => { }
 })

@@ -232,6 +232,39 @@ function UserContextProvider(props: React.PropsWithChildren<{}>) {
         toast.error("Something went wrong!");
       });
   };
+  const removeAvatar = () => {
+    if (!localStorage.getItem("todo-accessToken")) {
+      return console.log("Token not found");
+    }
+    const toastLoading = toast.loading("Removing avatar...");
+    fetch("/api/v1/users/removeAvatar", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("todo-accessToken")}`,
+      },
+    })
+      .then((parsed) => parsed.json())
+      .then((res) => {
+        if (res.success) {
+          setUser(res.data);
+          toast.success("Avatar removed", {
+            id: toastLoading,
+          });
+          setUser({ ...user, avatar: res.data.avatar });
+        } else if (!res.success) {
+          toast.error(res.message, {
+            id: toastLoading,
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error("Something went wrong!", {
+          id: toastLoading,
+        });
+      });
+  }
 
   return (
     <UserContext.Provider
@@ -250,6 +283,7 @@ function UserContextProvider(props: React.PropsWithChildren<{}>) {
         updateAvatar,
         userLogin,
         userRegister,
+        removeAvatar
       }}
     >
       {props.children}

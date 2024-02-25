@@ -4,14 +4,16 @@ import ApiError from "../utils/ApiError"
 import ApiResponse from "../utils/ApiResponse"
 import { User } from "../models/user.model"
 
+const defaultAvatar = "https://res.cloudinary.com/dv3qbj0bn/image/upload/v1707049828/todoapp/kq3jhuljke1vlb4fysoh.png";
+
 const registerUser = asyncHandler(
     async (req: Request, res: Response) => {
         const { fullName, email, password, avatar } = req.body
 
         if (
             [fullName, email, password].some((field) =>
-                field?.trim() === "") || 
-                !(fullName || email || password)
+                field?.trim() === "") ||
+            !(fullName || email || password)
         ) {
             throw new ApiError(400, "All fields are required")
         }
@@ -219,11 +221,37 @@ const getCurrentUser = asyncHandler(
     }
 )
 
+const removeAvatar = asyncHandler(
+    async (req: Request, res: Response) => {
+        if (req.user == undefined) {
+            throw new ApiError(400, "Token not found")
+        }
+        const { _id } = req.user;
+
+        const user = await User.findById(_id);
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        if (user.avatar === defaultAvatar) {
+            throw new ApiError(409, "Avatar already removed");
+        }
+
+        user.avatar = defaultAvatar
+        user.save({ validateBeforeSave: false });
+
+        return res.status(200).json(
+            new ApiResponse(200, { avatar: defaultAvatar }, "Avatar removed")
+        );
+    })
+
+
 export {
     registerUser,
     loginUser,
     updateAvatar,
     updateDetails,
     updatePassword,
-    getCurrentUser
+    getCurrentUser,
+    removeAvatar
 }

@@ -21,8 +21,9 @@ export default function UpdateAvatar({
   updateAvatarModal,
   setUpdateAvatarModal,
 }: Props) {
-  const { updateAvatar } = useUser();
+  const { updateAvatar, user, removeAvatar } = useUser();
 
+  const defaultAvatar = "https://res.cloudinary.com/dv3qbj0bn/image/upload/v1707049828/todoapp/kq3jhuljke1vlb4fysoh.png";
   const fileInput = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const handleSubmit = async (e: FormEvent) => {
@@ -35,6 +36,13 @@ export default function UpdateAvatar({
     setLoading(false);
     setUpdateAvatarModal(false);
   };
+
+  const handleRemove = async () => {
+    if (user.avatar === defaultAvatar) return;
+    setLoading(true);
+    await removeAvatar();
+    setUpdateAvatarModal(false);
+  }
 
   return (
     <Dialog open={updateAvatarModal}>
@@ -64,6 +72,7 @@ export default function UpdateAvatar({
             >
               Cancel
             </Button>
+            <Button type="reset" className="mt-2" variant="secondary" disabled={user.avatar === defaultAvatar} onClick={() => handleRemove()}>Remove Avatar</Button>
           </DialogFooter>
         </form>
       </DialogContent>
